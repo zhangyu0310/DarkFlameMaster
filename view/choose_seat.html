@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .title }}</title>
+    <link rel="shortcut icon" href="asset/favicon.ico"/>
+    <style>
+        body
+        {
+            background-image: url("asset/1000094126.png");
+            background-color: rgb(0,0,0, 0.15);
+            background-repeat:no-repeat;
+            background-size: auto;
+            background-position:center center;
+            background-blend-mode: multiply;
+        }
+        h1
+        {
+            text-shadow: 5px 5px 5px gray;
+            font-size: xxx-large;
+            cursor: default;
+            font-family: Georgia,serif;
+        }
+        h2
+        {
+            text-shadow: 5px 5px 5px gray;
+            font-size: xx-large;
+            cursor: default;
+            font-family: Georgia,serif;
+        }
+
+        .button {
+            display: inline-block;
+            border-radius: 8px;
+            background-color: rgba(239, 135, 117, 0.8);
+            border: none;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 25px;
+            width: 150px;
+            height: 60px;
+            transition: all 0.5s;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+
+        .button span {
+            cursor: pointer;
+            display: inline-block;
+            position: relative;
+            transition: 0.5s;
+        }
+
+        .button span:after {
+            content: '»';
+            position: absolute;
+            opacity: 0;
+            top: 0;
+            right: -20px;
+            transition: 0.5s;
+        }
+
+        .button:hover span {
+            padding-right: 25px;
+        }
+
+        .button:hover span:after {
+            opacity: 1;
+            right: 0;
+        }
+    </style>
+</head>
+
+<body onload="readData()"><center>
+    <script src="script/choose_seat.js"></script>
+    <h1>在线选座</h1>
+
+    <h2>座位表</h2>
+
+    <p>
+        -------------------- 屏幕方向 --------------------
+    </p>
+    <p id="seatMap">
+        <input type="hidden" id="sd" value="{{ .seatData }}">
+    </p>
+
+    <p style="font-size: medium; cursor: default;font-family: Georgia,serif;">
+        <button style="cursor: not-allowed;width: 25px; height: 25px;border: none;border-radius: 30%;background-color: #C7EDCC;"></button> 可选座位
+        <button style="cursor: not-allowed;width: 25px; height: 25px;border: none;border-radius: 30%;background-color: #FDE6E0;"></button> 选中座位
+        <button style="cursor: not-allowed;width: 25px; height: 25px;border: none;border-radius: 30%;background-color: #8A9585;"></button> 已选座位
+    </p>
+
+    <p style="font-size: large; cursor: default; font-family: Georgia, serif;">当前选中座位</p>
+    <p id="seatMsg" style="font-size: medium; cursor: default; font-family: Georgia, serif;"></p>
+
+    <br>
+
+    <form action="choose_seat" method="post" id="chooseForm">
+        <input type="hidden" name="chooseData" id="chooseData"/>
+        <button class="button" onclick="doSubmit()" style="vertical-align:middle"><span>提交</span></button>
+    </form>
+
+</center></body>
+</html>
