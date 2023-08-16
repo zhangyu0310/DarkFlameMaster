@@ -131,7 +131,12 @@ func ChooseResult(context *gin.Context) {
 	err := json.Unmarshal([]byte(data), &reMsg)
 	if err != nil {
 		zlog.Error("Unmarshal seat choose data failed. err:", err)
-		errMsg = "选座数据解析失败！"
+		errMsg = "选座数据解析失败！需要重新登入。"
+		context.HTML(http.StatusOK, "proof.html",
+			gin.H{
+				"title": "Dark Flame Master - Choose Seat",
+				"error": errMsg,
+			})
 	} else {
 		cus, err = customer.GetCustomer(reMsg.Proof)
 		if err != nil {
@@ -144,8 +149,8 @@ func ChooseResult(context *gin.Context) {
 			errMsg = "选座失败！"
 		}
 		zlog.DebugF("Tickets: %v", tk)
+		sendDataToWeb(context, cus, errMsg)
 	}
-	sendDataToWeb(context, cus, errMsg)
 }
 
 func CheckTickets(context *gin.Context) {
