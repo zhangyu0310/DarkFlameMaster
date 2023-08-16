@@ -52,6 +52,7 @@ func dumpTickets(w http.ResponseWriter, _ *http.Request) {
 		}
 	}
 	writer.Flush()
+	_ = file.Close()
 	_, _ = w.Write([]byte("ok"))
 }
 
