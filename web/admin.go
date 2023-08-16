@@ -52,7 +52,7 @@ func RunAdminServer() {
 	http.HandleFunc("/dump_tickets", dumpTickets)
 	http.HandleFunc("/delete_tickets", deleteTickets)
 	go func() {
-		if err := http.ListenAndServe(":1219", nil); err != nil &&
+		if err := http.ListenAndServe("127.0.0.1:1219", nil); err != nil &&
 			err != http.ErrServerClosed {
 			zlog.FatalF("listen: %s\n", err)
 		}
