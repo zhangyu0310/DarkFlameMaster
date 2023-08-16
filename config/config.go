@@ -11,7 +11,7 @@ type Config struct {
 	SeatFileType SeatFileType
 	SeatFile     string
 	// Customer info file
-	CustomerFileType   CustomerFileType
+	CustomerType       CustomerType
 	CustomerFile       string
 	ChooseSeatStrategy ChooseSeatStrategy
 }
@@ -31,12 +31,13 @@ const (
 	ZDB     DbType = "zdb"
 )
 
-type CustomerFileType string
+type CustomerType string
 
 const (
-	AliPay CustomerFileType = "alipay"
-	WeChat CustomerFileType = "wechat"
-	TestCF CustomerFileType = "test"
+	AliPay CustomerType = "alipay"
+	WeChat CustomerType = "wechat"
+	NoPay  CustomerType = "nopay"
+	TestCF CustomerType = "test"
 )
 
 type ChooseSeatStrategy string
@@ -44,7 +45,6 @@ type ChooseSeatStrategy string
 const (
 	PayTimeOneByOne ChooseSeatStrategy = "ptonebyone"
 	NoLimit         ChooseSeatStrategy = "nolimit"
-	TestCS          ChooseSeatStrategy = "test"
 )
 
 var (

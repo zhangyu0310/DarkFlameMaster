@@ -4,7 +4,7 @@ import (
 	"DarkFlameMaster/cinema"
 	"DarkFlameMaster/config"
 	"DarkFlameMaster/customer"
-	"DarkFlameMaster/ticket/mgr"
+	"DarkFlameMaster/ticket/tkmgr"
 	"DarkFlameMaster/web"
 	zlog "github.com/zhangyu0310/zlogger"
 	"os"
@@ -12,10 +12,16 @@ import (
 	"syscall"
 )
 
+// TODO: read config from file
 func initConfig(cfg *config.Config) {
-	cfg.SeatFile = "./data/seat.json"
-	cfg.DbPath = "./run"
-	_ = zlog.New("./run", "zlogger", true, zlog.LogLevelDebug)
+	cfg.DbType = config.LevelDB
+	cfg.DbPath = "./run/db"
+	cfg.SeatFileType = config.JsonType
+	cfg.SeatFile = "./data/奥斯卡长安国际影城-5号ALPD激光厅.json"
+	cfg.CustomerType = config.NoPay
+	cfg.CustomerFile = "./data/customer.json"
+	cfg.ChooseSeatStrategy = config.NoLimit
+	_ = zlog.New("./run/log", "zlogger", true, zlog.LogLevelDebug)
 }
 
 func main() {
@@ -31,12 +37,13 @@ func main() {
 		zlog.Fatal("Init customer info failed, err:", err)
 	}
 
-	err = mgr.Init()
+	err = tkmgr.Init()
 	if err != nil {
 		zlog.Fatal("Init ticket manager failed, err:", err)
 	}
 
 	srv := web.RunWebServer()
+	web.RunAdminServer()
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

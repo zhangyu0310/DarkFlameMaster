@@ -4,7 +4,7 @@ import (
 	"DarkFlameMaster/cinema"
 	"DarkFlameMaster/customer"
 	"DarkFlameMaster/seat"
-	"DarkFlameMaster/ticket/mgr"
+	"DarkFlameMaster/ticket/tkmgr"
 	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
@@ -48,12 +48,13 @@ func ShutdownWebServer(srv *http.Server) {
 }
 
 type SendMsg struct {
-	Proof        string       `json:"proof"`
-	Msg          string       `json:"msg"`
-	CanChooseNum uint         `json:"canChooseNum"`
-	MaxRow       uint         `json:"maxRow"`
-	MaxCol       uint         `json:"maxCol"`
-	SeatInfo     []*seat.Seat `json:"seatInfo"`
+	Proof        string        `json:"proof"`
+	Msg          string        `json:"msg"`
+	CanChooseNum uint          `json:"canChooseNum"`
+	MaxRow       uint          `json:"maxRow"`
+	MaxCol       uint          `json:"maxCol"`
+	SeatInfo     []*seat.Seat  `json:"seatInfo"`
+	BlockInfo    []*seat.Block `json:"blockInfo"`
 }
 
 type ReceiveMsg struct {
@@ -64,13 +65,14 @@ type ReceiveMsg struct {
 func Proof(context *gin.Context) {
 	context.HTML(http.StatusOK, "proof.html",
 		gin.H{
-			"title": "Dark Flame Master - Choose Seat",
+			"title":     "Dark Flame Master - Choose Seat",
+			"proofName": "QQ号",
 		})
 }
 
 func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 	// 打包发送数据
-	si, maxRow, maxCol := cinema.GetSeatMap()
+	si, bl, maxRow, maxCol := cinema.GetSeatMap()
 	sendData := SendMsg{
 		Proof:        c.Proof,
 		Msg:          errMsg,
@@ -78,6 +80,7 @@ func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 		MaxRow:       maxRow,
 		MaxCol:       maxCol,
 		SeatInfo:     si,
+		BlockInfo:    bl,
 	}
 	data, err := json.Marshal(sendData)
 	if err != nil {
@@ -134,7 +137,7 @@ func ChooseResult(context *gin.Context) {
 			zlog.Fatal("GetCustomer failed when choose result, err:", err)
 		}
 		seats := cinema.AssociateSeats(reMsg.SeatInfo)
-		tk, err := mgr.MakeTickets(cus, seats)
+		tk, err := tkmgr.MakeTickets(cus, seats)
 		if err != nil {
 			zlog.Error("Make tickets failed, err:", err)
 			errMsg = "选座失败！"

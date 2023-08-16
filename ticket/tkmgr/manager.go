@@ -1,4 +1,4 @@
-package mgr
+package tkmgr
 
 import (
 	"DarkFlameMaster/cinema"
@@ -113,4 +113,8 @@ func (m *TicketManager) makeTickets(customer *customer.Customer,
 		m.tickets = append(m.tickets, t)
 	}
 	return tickets, nil
+}
+
+func Dump() ([]*ticket.Ticket, error) {
+	return mgr.Storage.ReadAll()
 }

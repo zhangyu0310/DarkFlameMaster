@@ -1,0 +1,58 @@
+{
+	"maxRow": 15,
+	"maxCol": 27,
+	"blockInfo": [{
+		"row": "1-4",
+		"col": 1,
+		"direction": "front",
+		"blockNum": 2
+	},
+		{
+			"row": "1-4",
+			"col": 23,
+			"direction": "back",
+			"blockNum": 2
+		},
+		{
+			"row": "5-11",
+			"col": 1,
+			"direction": "front",
+			"blockNum": 5
+		},
+		{
+			"row": "5-11",
+			"col": 18,
+			"direction": "back",
+			"blockNum": 5
+		},
+		{
+			"row": "12-14",
+			"col": 3,
+			"direction": "front",
+			"blockNum": 3
+		},
+		{
+			"row": "12-14",
+			"col": 20,
+			"direction": "back",
+			"blockNum": 3
+		}
+	],
+	"seatInfo": [{
+		"row": "1-4",
+		"seatNum": 23
+	},
+		{
+			"row": "5-11",
+			"seatNum": 18
+		},
+		{
+			"row": "12-14",
+			"seatNum": 22
+		},
+		{
+			"row": "15-15",
+			"seatNum": 27
+		}
+	]
+}

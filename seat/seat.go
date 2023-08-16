@@ -14,6 +14,13 @@ const (
 	Invalid
 )
 
+type BlockDirection string
+
+const (
+	DirectionFront BlockDirection = "front"
+	DirectionBack  BlockDirection = "back"
+)
+
 func Status2Str(status Status) string {
 	switch status {
 	case Available:
@@ -44,4 +51,11 @@ func (s *Seat) IsAvailable() bool {
 func (s *Seat) BandageTicket(t *ticket.Ticket) {
 	s.Status = Elected
 	s.Ticket = t
+}
+
+type Block struct {
+	Row       uint           `json:"row"`
+	Col       uint           `json:"col"`
+	Direction BlockDirection `json:"direction"`
+	BlockNum  uint           `json:"blockNum"`
 }

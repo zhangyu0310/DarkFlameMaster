@@ -13,6 +13,9 @@ type PayTimeOneByOne struct {
 }
 
 func (s *PayTimeOneByOne) Init(cus map[string]*Customer) error {
+	if cus == nil {
+		return ErrStrategicConflict
+	}
 	for _, v := range cus {
 		s.payTimeOrder = append(s.payTimeOrder, v)
 	}

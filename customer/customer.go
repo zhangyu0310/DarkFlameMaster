@@ -9,22 +9,28 @@ import (
 )
 
 var (
-	customerInfo map[string]*Customer
-	strategy     Strategy
+	ErrCustomerNotExist  = errors.New("customer not exist")
+	ErrStrategicConflict = errors.New("customer strategic conflict")
 )
 
-var (
-	ErrCustomerNotExist = errors.New("customer not exist")
-)
+var cusMgr *Manager
 
-func Init() error {
+type Manager struct {
+	reader   Reader
+	strategy Strategy
+}
+
+func (mgr *Manager) Init() error {
 	cfg := config.GetGlobalConfig()
 	var reader Reader
-	switch cfg.CustomerFileType {
+	switch cfg.CustomerType {
 	case config.AliPay:
 		reader = &AliPayCustomerInfoReader{}
 	case config.WeChat:
+	case config.NoPay:
+		reader = &NoPayCustomerInfoReader{}
 	case config.TestCF:
+		reader = &TestCustomerInfoReader{}
 	default:
 		reader = &TestCustomerInfoReader{}
 	}
@@ -33,23 +39,22 @@ func Init() error {
 		zlog.Error("Init customer file reader failed, err:", err)
 		return err
 	}
-	customers, err := reader.Read()
+	cus, err := reader.Read()
 	if err != nil {
 		zlog.Error("Read customer info failed, err:", err)
 		return err
 	}
-	customerInfo = customers
+	mgr.reader = reader
 
 	switch cfg.ChooseSeatStrategy {
 	case config.PayTimeOneByOne:
-		strategy = &PayTimeOneByOne{}
+		mgr.strategy = &PayTimeOneByOne{}
 	case config.NoLimit:
-		strategy = &NoLimit{}
-	case config.TestCS:
+		mgr.strategy = &NoLimit{}
 	default:
-		strategy = &NoLimit{}
+		mgr.strategy = &NoLimit{}
 	}
-	err = strategy.Init(customerInfo)
+	err = mgr.strategy.Init(cus)
 	if err != nil {
 		zlog.Error("Init choose seat strategy failed, err:", err)
 		return err
@@ -57,16 +62,25 @@ func Init() error {
 	return nil
 }
 
+func (mgr *Manager) GetCustomer(proof string) (*Customer, error) {
+	return mgr.reader.GetCustomerInfo(proof)
+}
+
+func (mgr *Manager) CanChooseSeat(cus *Customer) bool {
+	return mgr.strategy.CanChooseSeat(cus)
+}
+
+func Init() error {
+	cusMgr = &Manager{}
+	return cusMgr.Init()
+}
+
 func GetCustomer(proof string) (*Customer, error) {
-	cus, ok := customerInfo[proof]
-	if !ok {
-		return nil, ErrCustomerNotExist
-	}
-	return cus, nil
+	return cusMgr.GetCustomer(proof)
 }
 
 func CanChooseSeat(cus *Customer) bool {
-	return strategy.CanChooseSeat(cus)
+	return cusMgr.CanChooseSeat(cus)
 }
 
 type Customer struct {

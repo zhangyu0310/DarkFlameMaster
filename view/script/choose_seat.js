@@ -158,7 +158,7 @@ function createSeat(map, row, col, bts) {
         case btStatus.btsInvalid:
             bt.style.backgroundColor = "transparent"
             bt.style.color = "transparent"
-            bt.style.cursor = "not-allowed"
+            bt.style.cursor = "default"
             break;
         case btStatus.btsIndex:
             bt.style.backgroundColor = "transparent"
@@ -187,6 +187,33 @@ function printSi(si) {
     return msg
 }
 
+function printBl(bl) {
+    var msg = ""
+    for (let i = 0; i < bl.length; i++) {
+        msg += bl[i]["row"] + " " + bl[i]["col"] + " " + bl[i]["blockNum"] + "\n"
+    }
+    return msg
+}
+
+function seatSortFunc(a, b) {
+    if (a["row"] > b["row"]) {
+        return 1;
+    } else if (a["row"] < b["row"]) {
+        return -1;
+    } else {
+        if (a["col"] > b["col"]) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+}
+
+const blockDirection = {
+    front: "front",
+    back: "back",
+}
+
 function readData() {
     // 读取服务端传来的座位数据（JSON），并解析
     const data = document.getElementById("sd")
@@ -199,38 +226,54 @@ function readData() {
     maxRow = seatData["maxRow"]
     maxCol = seatData["maxCol"]
     proof = seatData["proof"]
-    // 根据数据生成座位图
+    // 读取排序座位信息
     let si = seatData["seatInfo"]
-    si.sort(function (a, b) {
-        if (a["row"] > b["row"]) {
-            return 1;
-        } else if (a["row"] < b["row"]) {
-            return -1;
-        } else {
-            if (a["col"] > b["col"]) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-    })
+    si.sort(seatSortFunc)
     // alert(printSi(si))
+    // 读取排序空格信息
+    let bl = seatData["blockInfo"]
+    bl.sort(seatSortFunc)
+    // alert(printBl(bl))
+    // 根据数据生成座位图
     var map = document.getElementById("seatMap")
-    // 创建索引行
-    var indexRow = createRow(map)
-    createSeat(indexRow, 0, -1, btStatus.btsIndex)
-    for (let i = 0; i < maxCol; i++) {
-        createSeat(indexRow, 0, i, btStatus.btsIndex)
-    }
+    // 创建索引行 - 由于增加了空格，所以不需要创建索引行
+    // var indexRow = createRow(map)
+    // createSeat(indexRow, 0, -1, btStatus.btsIndex)
+    // for (let i = 0; i < maxCol; i++) {
+    //     createSeat(indexRow, 0, i, btStatus.btsIndex)
+    // }
     // 创建座位行
+    var blockIndex = 0
+    var lastRow = 0;
     var mapRow;
     for (let i = 0; i < si.length; i++) {
         // 座位前的行号
-        if (i % maxCol == 0) {
+        if (lastRow != si[i]["row"]) {
             mapRow = createRow(map)
             createSeat(mapRow, si[i]["row"], 0, btStatus.btsIndex)
+            lastRow = si[i]["row"]
+        }
+        // 匹配空格信息
+        if (blockIndex < bl.length &&
+            bl[blockIndex]["row"] == si[i]["row"] &&
+            bl[blockIndex]["col"] == si[i]["col"] &&
+            bl[blockIndex]["direction"] == blockDirection.front) {
+            for (let j = 0; j < bl[blockIndex]["blockNum"]; j++) {
+                createSeat(mapRow, -100-blockIndex, -j-1, btStatus.btsInvalid)
+            }
+            blockIndex++
         }
         createSeat(mapRow, si[i]["row"], si[i]["col"], si[i]["status"])
+        // 匹配空格信息
+        if (blockIndex < bl.length &&
+            bl[blockIndex]["row"] == si[i]["row"] &&
+            bl[blockIndex]["col"] == si[i]["col"] &&
+            bl[blockIndex]["direction"] == blockDirection.back) {
+            for (let j = 0; j < bl[blockIndex]["blockNum"]; j++) {
+                createSeat(mapRow, -100-blockIndex, -j-1, btStatus.btsInvalid)
+            }
+            blockIndex++
+        }
     }
 
     // 生成选座信息
