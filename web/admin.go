@@ -32,15 +32,26 @@ func dumpTickets(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	writer := csv.NewWriter(file)
-	_ = writer.Write([]string{"ID", "CustomerProof", "Row", "Column", "CreateTime"})
+	err = writer.Write([]string{"ID", "CustomerProof", "Row", "Column", "CreateTime"})
+	if err != nil {
+		zlog.Error("write csv header failed, err:", err)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
 	for _, t := range tk {
-		_ = writer.Write([]string{
+		err = writer.Write([]string{
 			t.ID,
 			t.CustomerProof,
 			fmt.Sprintf("%d", t.Row),
 			fmt.Sprintf("%d", t.Column),
 			t.CreateTime.Format("2006-01-02 15:04:05")})
+		if err != nil {
+			zlog.Error("write csv data failed, err:", err)
+			_, _ = w.Write([]byte(err.Error()))
+			return
+		}
 	}
+	writer.Flush()
 	_, _ = w.Write([]byte("ok"))
 }
 
