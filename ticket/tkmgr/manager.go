@@ -115,6 +115,20 @@ func (m *TicketManager) makeTickets(customer *customer.Customer,
 	return tickets, nil
 }
 
+func (m *TicketManager) CheckTickets(proof string) []*ticket.Ticket {
+	t := make([]*ticket.Ticket, 0)
+	for _, v := range m.tickets {
+		if v.CustomerProof == proof {
+			t = append(t, v)
+		}
+	}
+	return t
+}
+
 func Dump() ([]*ticket.Ticket, error) {
 	return mgr.Storage.ReadAll()
+}
+
+func CheckTickets(proof string) []*ticket.Ticket {
+	return mgr.CheckTickets(proof)
 }

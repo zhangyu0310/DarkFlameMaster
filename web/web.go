@@ -7,6 +7,7 @@ import (
 	"DarkFlameMaster/ticket/tkmgr"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	zlog "github.com/zhangyu0310/zlogger"
 	"net/http"
@@ -22,7 +23,7 @@ func RunWebServer() *http.Server {
 	router.GET("/", Proof)
 	router.GET("/choose_seat", ChooseSeat)
 	router.POST("/choose_seat", ChooseResult)
-	// TODO: 查票相关代码
+	router.POST("/check_tickets", CheckTickets)
 
 	srv := &http.Server{Addr: ":718", Handler: router}
 	go func() {
@@ -145,4 +146,20 @@ func ChooseResult(context *gin.Context) {
 		zlog.DebugF("Tickets: %v", tk)
 	}
 	sendDataToWeb(context, cus, errMsg)
+}
+
+func CheckTickets(context *gin.Context) {
+	proof := context.PostForm("check")
+	t := tkmgr.CheckTickets(proof)
+	msg := ""
+	if len(t) == 0 {
+		msg = "当前用户没有选座记录！"
+	} else {
+		for _, v := range t {
+			msg += fmt.Sprintf("第%d排，第%d座，选座时间:%s\n",
+				v.Row, v.Column, v.CreateTime.Format("2006-01-02 15:04:05"))
+		}
+	}
+	context.String(http.StatusOK, msg)
+	return
 }

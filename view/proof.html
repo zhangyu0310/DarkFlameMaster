@@ -87,7 +87,11 @@
     <form action="choose_seat" method="get" id="proofForm">
         <input type="text" name="proof" id="proof" size="40"/><br><br>
     </form>
-    <button class="button" onclick="doProof()"><span>确认</span></button>
+    <form action="check_tickets" method="post" id="checkForm">
+        <input type="hidden" name="check" id="check"/>
+    </form>
+    <button class="button" onclick="doProof()"><span>选座</span></button>
+    <button class="button" onclick="doCheck()"><span>查询</span></button>
 
     <h2>
         {{ .error }}
