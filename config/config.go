@@ -1,19 +1,37 @@
 package config
 
-import "sync/atomic"
+import (
+	"encoding/json"
+	zlog "github.com/zhangyu0310/zlogger"
+	"os"
+	"strings"
+	"sync/atomic"
+)
 
 // Config Configurations of server.
 type Config struct {
 	// Database info
-	DbType DbType
-	DbPath string
+	DbType DbType `json:"DbType"`
+	DbPath string `json:"DbPath"`
 	// Seat info file
-	SeatFileType SeatFileType
-	SeatFile     string
+	SeatFileType SeatFileType `json:"SeatFileType"`
+	SeatFile     string       `json:"SeatFile"`
 	// Customer info file
-	CustomerType       CustomerType
-	CustomerFile       string
-	ChooseSeatStrategy ChooseSeatStrategy
+	CustomerType       CustomerType       `json:"CustomerType"`
+	CustomerFile       string             `json:"CustomerFile"`
+	ChooseSeatStrategy ChooseSeatStrategy `json:"ChooseSeatStrategy"`
+	LogPath            string             `json:"LogPath"`
+}
+
+var defaultConfig = Config{
+	DbType:             LevelDB,
+	DbPath:             "./run/db",
+	SeatFileType:       JsonType,
+	SeatFile:           "./data/奥斯卡长安国际影城-5号ALPD激光厅.json",
+	CustomerType:       NoPay,
+	CustomerFile:       "./data/customer.json",
+	ChooseSeatStrategy: NoLimit,
+	LogPath:            "./run/log",
 }
 
 type SeatFileType string
@@ -43,7 +61,7 @@ const (
 type ChooseSeatStrategy string
 
 const (
-	PayTimeOneByOne ChooseSeatStrategy = "ptonebyone"
+	PayTimeOneByOne ChooseSeatStrategy = "paytimeonebyone"
 	NoLimit         ChooseSeatStrategy = "nolimit"
 )
 
@@ -53,10 +71,26 @@ var (
 
 // InitializeConfig initialize the global config handler.
 func InitializeConfig(enforceCmdArgs func(*Config)) {
-	cfg := Config{}
+	cfg := defaultConfig
 	// Use command config cover config file.
 	enforceCmdArgs(&cfg)
 	StoreGlobalConfig(&cfg)
+}
+
+// ReadConfig reads the configuration from the given path and stores it in the given config.
+func ReadConfig(path string, cfg *Config) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		zlog.Fatal("Read config file failed, err:", err)
+	}
+	err = json.Unmarshal(data, cfg)
+	if err != nil {
+		zlog.Fatal("Unmarshal config file failed, err:", err)
+	}
+	cfg.DbType = DbType(strings.ToLower(string(cfg.DbType)))
+	cfg.SeatFileType = SeatFileType(strings.ToLower(string(cfg.SeatFileType)))
+	cfg.CustomerType = CustomerType(strings.ToLower(string(cfg.CustomerType)))
+	cfg.ChooseSeatStrategy = ChooseSeatStrategy(strings.ToLower(string(cfg.ChooseSeatStrategy)))
 }
 
 // GetGlobalConfig returns the global configuration for this server.

@@ -48,14 +48,21 @@ func ShutdownWebServer(srv *http.Server) {
 	zlog.Info("Server exiting")
 }
 
+type SeatWrapper struct {
+	Row    uint        `json:"row"`
+	Column uint        `json:"col"`
+	Status seat.Status `json:"status"`
+	IsMine bool        `json:"isMine"`
+}
+
 type SendMsg struct {
-	Proof        string        `json:"proof"`
-	Msg          string        `json:"msg"`
-	CanChooseNum uint          `json:"canChooseNum"`
-	MaxRow       uint          `json:"maxRow"`
-	MaxCol       uint          `json:"maxCol"`
-	SeatInfo     []*seat.Seat  `json:"seatInfo"`
-	BlockInfo    []*seat.Block `json:"blockInfo"`
+	Proof        string         `json:"proof"`
+	Msg          string         `json:"msg"`
+	CanChooseNum uint           `json:"canChooseNum"`
+	MaxRow       uint           `json:"maxRow"`
+	MaxCol       uint           `json:"maxCol"`
+	SeatInfo     []*SeatWrapper `json:"seatInfo"`
+	BlockInfo    []*seat.Block  `json:"blockInfo"`
 }
 
 type ReceiveMsg struct {
@@ -74,13 +81,26 @@ func Proof(context *gin.Context) {
 func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 	// 打包发送数据
 	si, bl, maxRow, maxCol := cinema.GetSeatMap()
+	seatWrapper := make([]*SeatWrapper, 0, len(si))
+	for _, s := range si {
+		sw := &SeatWrapper{
+			Row:    s.Row,
+			Column: s.Column,
+			Status: s.Status,
+			IsMine: false,
+		}
+		if s.Ticket != nil && s.Ticket.CustomerProof == c.Proof {
+			sw.IsMine = true
+		}
+		seatWrapper = append(seatWrapper, sw)
+	}
 	sendData := SendMsg{
 		Proof:        c.Proof,
 		Msg:          errMsg,
 		CanChooseNum: c.RemainTicketNumber(),
 		MaxRow:       maxRow,
 		MaxCol:       maxCol,
-		SeatInfo:     si,
+		SeatInfo:     seatWrapper,
 		BlockInfo:    bl,
 	}
 	data, err := json.Marshal(sendData)

@@ -1,6 +1,7 @@
 var canChooseNum = 0
 var chooseNum = 0
 var chooseSeat = new Map()
+var chosenSeat = new Map()
 var maxRow = 0
 var maxCol = 0
 var proof = ""
@@ -32,6 +33,9 @@ const btStatus = {
 
 function makeSeatMsg() {
     var msg = new Array()
+    for (let [key, value] of chosenSeat) {
+        msg.push("第"+value.getAttribute("row")+"排，第"+value.getAttribute("col")+"座")
+    }
     for (let [key, value] of chooseSeat) {
         msg.push("第"+value.getAttribute("row")+"排，第"+value.getAttribute("col")+"座")
     }
@@ -114,7 +118,7 @@ function newSeat() {
     return document.createElement("button")
 }
 
-function createSeat(map, row, col, bts) {
+function createSeat(map, row, col, bts, isMine) {
     var bt = newSeat()
     map.appendChild(bt)
     bt.style.width = "30px"
@@ -151,8 +155,14 @@ function createSeat(map, row, col, bts) {
             bt.setAttribute("onmouseout", "outSeat(\"" + id + "\")")
             break;
         case btStatus.btsSelected:
-            bt.style.backgroundColor = "#8A9585";
-            bt.style.color = "#8A9585"
+            if (isMine) {
+                bt.style.backgroundColor = "rgba(236,23,48,0.94)";
+                bt.style.color = "rgba(236,23,48,0.94)"
+                chosenSeat.set(id, bt)
+            } else {
+                bt.style.backgroundColor = "#8A9585";
+                bt.style.color = "#8A9585"
+            }
             bt.style.cursor = "not-allowed"
             break;
         case btStatus.btsInvalid:
@@ -283,7 +293,7 @@ function readData() {
             }
             blockIndex++
         }
-        createSeat(mapRow, si[i]["row"], si[i]["col"], si[i]["status"])
+        createSeat(mapRow, si[i]["row"], si[i]["col"], si[i]["status"], si[i]["isMine"])
         // 匹配空格信息
         if (blockIndex < bl.length &&
             bl[blockIndex]["row"] == si[i]["row"] &&

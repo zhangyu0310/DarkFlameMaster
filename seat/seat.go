@@ -53,6 +53,11 @@ func (s *Seat) BandageTicket(t *ticket.Ticket) {
 	s.Ticket = t
 }
 
+func (s *Seat) UnBandageTicket() {
+	s.Status = Available
+	s.Ticket = nil
+}
+
 type Block struct {
 	Row       uint           `json:"row"`
 	Col       uint           `json:"col"`

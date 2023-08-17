@@ -22,7 +22,7 @@ pic/*.png
 .idea
 
 # Zlog files
-zlogger_*
+zlogger*
 
 # MacOS file
 .DS_Store

@@ -59,3 +59,16 @@ func (s *TicketLevelDB) WriteTickets(tickets []*ticket.Ticket) error {
 	}
 	return nil
 }
+
+func (s *TicketLevelDB) DeleteTickets(tickets []*ticket.Ticket) error {
+	batch := leveldb.Batch{}
+	for _, t := range tickets {
+		batch.Delete([]byte(t.ID))
+	}
+	err := s.db.Write(&batch, &opt.WriteOptions{Sync: true})
+	if err != nil {
+		zlog.Error("Delete ticket from db failed, err:", err)
+		return err
+	}
+	return nil
+}

@@ -12,16 +12,9 @@ import (
 	"syscall"
 )
 
-// TODO: read config from file
 func initConfig(cfg *config.Config) {
-	cfg.DbType = config.LevelDB
-	cfg.DbPath = "./run/db"
-	cfg.SeatFileType = config.JsonType
-	cfg.SeatFile = "./data/奥斯卡长安国际影城-5号ALPD激光厅.json"
-	cfg.CustomerType = config.NoPay
-	cfg.CustomerFile = "./data/customer.json"
-	cfg.ChooseSeatStrategy = config.NoLimit
-	_ = zlog.New("./run/log", "zlogger", true, zlog.LogLevelDebug)
+	config.ReadConfig("./conf/configure.json", cfg)
+	_ = zlog.New(cfg.LogPath, "zlogger", true, zlog.LogLevelDebug)
 }
 
 func main() {

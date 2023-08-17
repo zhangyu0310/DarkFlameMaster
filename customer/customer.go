@@ -94,6 +94,15 @@ func (c *Customer) AddTicket(t *ticket.Ticket) {
 	c.Tickets = append(c.Tickets, t)
 }
 
+func (c *Customer) DeleteTicket(t *ticket.Ticket) {
+	for i, v := range c.Tickets {
+		if v.ID == t.ID {
+			c.Tickets = append(c.Tickets[:i], c.Tickets[i+1:]...)
+			return
+		}
+	}
+}
+
 func (c *Customer) RemainTicketNumber() uint {
 	return c.TicketNum - uint(len(c.Tickets))
 }

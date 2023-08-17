@@ -3,6 +3,8 @@ package customer
 import (
 	"fmt"
 	"github.com/google/uuid"
+	zlog "github.com/zhangyu0310/zlogger"
+	"os"
 	"time"
 )
 
@@ -25,6 +27,12 @@ func (r *AliPayCustomerInfoReader) Init(customerFilePath string) error {
 
 // TODO: 实现读取支付宝账单信息
 func (r *AliPayCustomerInfoReader) Read() (map[string]*Customer, error) {
+	data, err := os.ReadFile(r.infoFilePath)
+	if err != nil {
+		zlog.Error("Read customer info file failed, err:", err)
+		return nil, err
+	}
+	fmt.Println(string(data))
 	return nil, nil
 }
 

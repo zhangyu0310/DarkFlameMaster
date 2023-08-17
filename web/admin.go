@@ -1,13 +1,16 @@
 package web
 
 import (
+	"DarkFlameMaster/seat"
 	"DarkFlameMaster/ticket/tkmgr"
-	"encoding/csv"
+	"DarkFlameMaster/tools/dumper/dump"
+	"encoding/json"
 	"fmt"
 	zlog "github.com/zhangyu0310/zlogger"
+	"io"
 	"net/http"
-	"os"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -25,39 +28,44 @@ func dumpTickets(w http.ResponseWriter, _ *http.Request) {
 	// create dump file and write data
 	fileName := fmt.Sprintf("dump_tickets_%s.csv",
 		time.Now().Format("20060102150405"))
-	file, err := os.Create(fileName)
+	err = dump.ToCSV(fileName, tk)
 	if err != nil {
-		zlog.Error("create file failed, err:", err)
+		zlog.ErrorF("dump tickets failed, err: %s\n", err)
 		_, _ = w.Write([]byte(err.Error()))
 		return
 	}
-	writer := csv.NewWriter(file)
-	err = writer.Write([]string{"ID", "CustomerProof", "Row", "Column", "CreateTime"})
-	if err != nil {
-		zlog.Error("write csv header failed, err:", err)
-		_, _ = w.Write([]byte(err.Error()))
-		return
-	}
-	for _, t := range tk {
-		err = writer.Write([]string{
-			t.ID,
-			t.CustomerProof,
-			fmt.Sprintf("%d", t.Row),
-			fmt.Sprintf("%d", t.Column),
-			t.CreateTime.Format("2006-01-02 15:04:05")})
-		if err != nil {
-			zlog.Error("write csv data failed, err:", err)
-			_, _ = w.Write([]byte(err.Error()))
-			return
-		}
-	}
-	writer.Flush()
-	_ = file.Close()
 	_, _ = w.Write([]byte("ok"))
 }
 
-func deleteTickets(_ http.ResponseWriter, _ *http.Request) {
+type DeleteTicketsReq struct {
+	Mode  string       `json:"mode"`
+	Ids   []string     `json:"ids"`
+	Seats []*seat.Seat `json:"seats"`
+}
 
+func deleteTickets(w http.ResponseWriter, r *http.Request) {
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		zlog.Error("read request body failed, err:", err)
+		_, _ = w.Write([]byte(err.Error()))
+	}
+	req := &DeleteTicketsReq{}
+	err = json.Unmarshal(data, req)
+	if err != nil {
+		zlog.Error("unmarshal request body failed, err:", err)
+		_, _ = w.Write([]byte(err.Error()))
+	}
+	switch strings.ToLower(req.Mode) {
+	case "id":
+		err = tkmgr.DeleteTicketsByIds(req.Ids)
+	case "seat":
+		err = tkmgr.DeleteTicketsBySeats(req.Seats)
+	default:
+		zlog.Error("invalid mode:", req.Mode)
+		_, _ = w.Write([]byte("invalid mode"))
+	}
+
+	_, _ = w.Write([]byte("ok"))
 }
 
 func RunAdminServer() {
