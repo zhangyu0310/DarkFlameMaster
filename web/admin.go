@@ -64,8 +64,12 @@ func deleteTickets(w http.ResponseWriter, r *http.Request) {
 		zlog.Error("invalid mode:", req.Mode)
 		_, _ = w.Write([]byte("invalid mode"))
 	}
-
-	_, _ = w.Write([]byte("ok"))
+	if err != nil {
+		zlog.Error("delete tickets failed, err:", err)
+		_, _ = w.Write([]byte(err.Error()))
+	} else {
+		_, _ = w.Write([]byte("ok"))
+	}
 }
 
 func RunAdminServer() {

@@ -5,6 +5,8 @@ var chosenSeat = new Map()
 var maxRow = 0
 var maxCol = 0
 var proof = ""
+var order = ""
+var beforeChild = null
 
 function doSubmit() {
     if (chooseNum == 0) {
@@ -120,7 +122,12 @@ function newSeat() {
 
 function createSeat(map, row, col, bts, isMine) {
     var bt = newSeat()
-    map.appendChild(bt)
+    if (order == "right") {
+        map.insertBefore(bt, beforeChild)
+        beforeChild = bt
+    } else {
+        map.appendChild(bt)
+    }
     bt.style.width = "30px"
     bt.style.height = "30px"
     bt.style.marginLeft = "3px"
@@ -256,6 +263,7 @@ function readData() {
     maxRow = seatData["maxRow"]
     maxCol = seatData["maxCol"]
     proof = seatData["proof"]
+    order = seatData["order"]
     // 读取排序座位信息
     let si = seatData["seatInfo"]
     si.sort(seatSortFunc)
@@ -280,6 +288,7 @@ function readData() {
         // 座位前的行号
         if (lastRow != si[i]["row"]) {
             mapRow = createRow(map)
+            beforeChild = null
             createSeat(mapRow, si[i]["row"], 0, btStatus.btsIndex)
             lastRow = si[i]["row"]
         }

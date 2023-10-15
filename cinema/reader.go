@@ -14,7 +14,15 @@ import (
 
 type Reader interface {
 	Init(string) error
-	Read() ([][]*seat.Seat, []*seat.Block, uint, uint, error)
+	Read() (*SeatData, error)
+}
+
+type SeatData struct {
+	MaxRow uint
+	MaxCol uint
+	Order  string
+	Seats  [][]*seat.Seat
+	Block  []*seat.Block
 }
 
 type JsonTypeSeatInfoReader struct {
@@ -36,6 +44,7 @@ type SeatInfo struct {
 type JsonSeat struct {
 	MaxRow    uint         `json:"maxRow"`
 	MaxCol    uint         `json:"maxCol"`
+	Order     string       `json:"order"`
 	BlockInfo []*BlockInfo `json:"blockInfo"`
 	SeatInfo  []*SeatInfo  `json:"seatInfo"`
 }
@@ -64,17 +73,17 @@ func getStartAndEnd(str string) (uint, uint, error) {
 	return uint(start), uint(end), nil
 }
 
-func (r *JsonTypeSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, uint, error) {
+func (r *JsonTypeSeatInfoReader) Read() (*SeatData, error) {
 	data, err := os.ReadFile(r.infoFilePath)
 	if err != nil {
 		zlog.Error("Read seat info file failed, err:", err)
-		return nil, nil, 0, 0, err
+		return nil, err
 	}
 	var jsonSeat JsonSeat
 	err = json.Unmarshal(data, &jsonSeat)
 	if err != nil {
 		zlog.Error("Unmarshal seat info failed, err:", err)
-		return nil, nil, 0, 0, err
+		return nil, err
 	}
 
 	seats := make([][]*seat.Seat, 0)
@@ -86,7 +95,7 @@ func (r *JsonTypeSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, ui
 		start, end, err := getStartAndEnd(v.Row)
 		if err != nil {
 			zlog.Error("Get start and end failed, err:", err)
-			return nil, nil, 0, 0, err
+			return nil, err
 		}
 		for i := start; i <= end; i++ {
 			tmpSeats[i] = v.SeatNum
@@ -108,7 +117,7 @@ func (r *JsonTypeSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, ui
 		start, end, err := getStartAndEnd(v.Row)
 		if err != nil {
 			zlog.Error("Get start and end failed, err:", err)
-			return nil, nil, 0, 0, err
+			return nil, err
 		}
 		for i := start; i <= end; i++ {
 			block = append(block, &seat.Block{
@@ -119,7 +128,13 @@ func (r *JsonTypeSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, ui
 			})
 		}
 	}
-	return seats, block, jsonSeat.MaxRow, jsonSeat.MaxCol, nil
+	return &SeatData{
+		MaxRow: jsonSeat.MaxRow,
+		MaxCol: jsonSeat.MaxCol,
+		Order:  jsonSeat.Order,
+		Seats:  seats,
+		Block:  block,
+	}, nil
 }
 
 type TestSeatInfoReader struct{}
@@ -128,7 +143,7 @@ func (r *TestSeatInfoReader) Init(string) error {
 	return nil
 }
 
-func (r *TestSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, uint, error) {
+func (r *TestSeatInfoReader) Read() (*SeatData, error) {
 	seats := make([][]*seat.Seat, 0)
 	block := make([]*seat.Block, 0)
 	for i := uint(0); i < 10; i++ {
@@ -147,5 +162,11 @@ func (r *TestSeatInfoReader) Read() ([][]*seat.Seat, []*seat.Block, uint, uint, 
 		c := rand.Intn(9)
 		seats[r][c].Status = seat.Elected
 	}
-	return seats, block, 10, 10, nil
+	return &SeatData{
+		MaxRow: 10,
+		MaxCol: 10,
+		Order:  "left",
+		Seats:  seats,
+		Block:  block,
+	}, nil
 }

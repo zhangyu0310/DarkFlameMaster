@@ -1,10 +1,10 @@
 {
-  "DbType": "LevelDB",
-  "DbPath": "./run/db",
-  "SeatFileType": "Json",
-  "SeatFile": "./data/奥斯卡长安国际影城-5号ALPD激光厅.json",
-  "CustomerType": "NoPay",
-  "CustomerFile": "./data/customer.json",
-  "ChooseSeatStrategy": "NoLimit",
-  "LogPath": "./run"
+  "DbType": "",
+  "DbPath": "",
+  "SeatFileType": "",
+  "SeatFile": "",
+  "CustomerType": "",
+  "CustomerFile": "",
+  "ChooseSeatStrategy": "",
+  "LogPath": ""
 }

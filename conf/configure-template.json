@@ -1,0 +1,10 @@
+{
+  "DbType": "LevelDB",
+  "DbPath": "./run/db",
+  "SeatFileType": "Json",
+  "SeatFile": "./data/格莱美艺术影城-7号杜比巨幕全景声厅.json",
+  "CustomerType": "NoPay",
+  "CustomerFile": "./data/customer.json",
+  "ChooseSeatStrategy": "NoLimit",
+  "LogPath": "./run"
+}

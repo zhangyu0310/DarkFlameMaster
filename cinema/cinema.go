@@ -18,11 +18,7 @@ func init() {
 }
 
 type Cinema struct {
-	maxRow uint
-	maxCol uint
-
-	Seats [][]*seat.Seat
-	Block []*seat.Block
+	*SeatData
 }
 
 func Init() error {
@@ -41,24 +37,21 @@ func Init() error {
 		zlog.Error("Init seat file reader failed, err:", err)
 		return err
 	}
-	seats, block, maxRow, maxCol, err := reader.Read()
+	seatData, err := reader.Read()
 	if err != nil {
 		zlog.ErrorF("Read seat info [%s] failed, err: [%s]", cfg.SeatFile, err)
 		return err
 	}
-	cinema.init(maxRow, maxCol, seats, block)
+	cinema.init(seatData)
 	return nil
 }
 
-func (c *Cinema) init(maxRow, maxCol uint, seats [][]*seat.Seat, block []*seat.Block) {
-	c.Seats = seats
-	c.Block = block
-	c.maxRow = maxRow
-	c.maxCol = maxCol
+func (c *Cinema) init(data *SeatData) {
+	c.SeatData = data
 }
 
 func (c *Cinema) checkRowColValid(row, col uint) error {
-	if c.maxRow < row || c.maxCol < col {
+	if c.MaxRow < row || c.MaxCol < col {
 		return ErrInvalidRowOrCol
 	}
 	return nil
@@ -84,9 +77,9 @@ func AssociateSeats(seatInfo []*seat.Seat) []*seat.Seat {
 	return result
 }
 
-func GetSeatMap() ([]*seat.Seat, []*seat.Block, uint, uint) {
-	maxRow := cinema.maxRow
-	maxCol := cinema.maxCol
+func GetSeatMap() ([]*seat.Seat, []*seat.Block, uint, uint, string) {
+	maxRow := cinema.MaxRow
+	maxCol := cinema.MaxCol
 	seatInfo := make([]*seat.Seat, 0)
 
 	for i := uint(0); i < maxRow; i++ {
@@ -95,5 +88,5 @@ func GetSeatMap() ([]*seat.Seat, []*seat.Block, uint, uint) {
 		}
 	}
 
-	return seatInfo, cinema.Block, maxRow, maxCol
+	return seatInfo, cinema.Block, maxRow, maxCol, cinema.Order
 }

@@ -14,7 +14,15 @@ import (
 	"time"
 )
 
+var (
+	GinRunMode string
+)
+
 func RunWebServer() *http.Server {
+	if GinRunMode != gin.ReleaseMode {
+		GinRunMode = ""
+	}
+	gin.SetMode(GinRunMode)
 	router := gin.Default()
 	router.LoadHTMLGlob("view/*.html")
 
@@ -61,6 +69,7 @@ type SendMsg struct {
 	CanChooseNum uint           `json:"canChooseNum"`
 	MaxRow       uint           `json:"maxRow"`
 	MaxCol       uint           `json:"maxCol"`
+	Order        string         `json:"order"`
 	SeatInfo     []*SeatWrapper `json:"seatInfo"`
 	BlockInfo    []*seat.Block  `json:"blockInfo"`
 }
@@ -80,7 +89,7 @@ func Proof(context *gin.Context) {
 
 func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 	// 打包发送数据
-	si, bl, maxRow, maxCol := cinema.GetSeatMap()
+	si, bl, maxRow, maxCol, order := cinema.GetSeatMap()
 	seatWrapper := make([]*SeatWrapper, 0, len(si))
 	for _, s := range si {
 		sw := &SeatWrapper{
@@ -100,6 +109,7 @@ func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 		CanChooseNum: c.RemainTicketNumber(),
 		MaxRow:       maxRow,
 		MaxCol:       maxCol,
+		Order:        order,
 		SeatInfo:     seatWrapper,
 		BlockInfo:    bl,
 	}

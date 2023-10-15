@@ -4,8 +4,11 @@ import (
 	"DarkFlameMaster/cinema"
 	"DarkFlameMaster/config"
 	"DarkFlameMaster/customer"
+	"DarkFlameMaster/serverinfo"
 	"DarkFlameMaster/ticket/tkmgr"
 	"DarkFlameMaster/web"
+	"flag"
+	"fmt"
 	zlog "github.com/zhangyu0310/zlogger"
 	"os"
 	"os/signal"
@@ -18,6 +21,21 @@ func initConfig(cfg *config.Config) {
 }
 
 func main() {
+	serverinfo.InitInformation()
+	v := flag.Bool("v", false, "show version")
+	vv := flag.Bool("version", false, "show version")
+	h := flag.Bool("h", false, "show help")
+	hh := flag.Bool("help", false, "show help")
+	flag.Parse()
+	if *v || *vv {
+		fmt.Println(serverinfo.Get().String())
+		return
+	}
+	if *h || *hh {
+		flag.Usage()
+		return
+	}
+
 	config.InitializeConfig(initConfig)
 
 	err := cinema.Init()
@@ -35,6 +53,7 @@ func main() {
 		zlog.Fatal("Init ticket manager failed, err:", err)
 	}
 
+	web.GinRunMode = serverinfo.Get().BuildMode
 	srv := web.RunWebServer()
 	web.RunAdminServer()
 

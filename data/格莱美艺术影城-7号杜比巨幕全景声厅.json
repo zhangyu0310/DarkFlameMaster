@@ -1,0 +1,71 @@
+{
+	"maxRow": 12,
+	"maxCol": 36,
+	"order": "right",
+	"blockInfo": [{
+			"row": "1-3",
+			"col": 1,
+		    "direction": "front",
+			"blockNum": 1
+		},
+		{
+			"row": "1-3",
+			"col": 34,
+			"direction": "back",
+			"blockNum": 1
+		},
+		{
+			"row": "4-8",
+			"col": 1,
+			"direction": "front",
+			"blockNum": 4
+		},
+		{
+			"row": "4-8",
+			"col": 28,
+			"direction": "back",
+			"blockNum": 4
+		},
+		{
+			"row": "9-11",
+			"col": 3,
+			"direction": "front",
+			"blockNum": 2
+		},
+		{
+			"row": "9-11",
+			"col": 31,
+			"direction": "front",
+			"blockNum": 2
+		},
+		{
+			"row": "12-12",
+			"col": 1,
+			"direction": "front",
+			"blockNum": 2
+		},
+		{
+			"row": "12-12",
+			"col": 32,
+			"direction": "back",
+			"blockNum": 2
+		}
+	],
+	"seatInfo": [{
+			"row": "1-3",
+			"seatNum": 34
+		},
+		{
+			"row": "4-8",
+			"seatNum": 28
+		},
+		{
+			"row": "9-11",
+			"seatNum": 32
+		},
+		{
+			"row": "12-12",
+			"seatNum": 32
+		}
+	]
+}

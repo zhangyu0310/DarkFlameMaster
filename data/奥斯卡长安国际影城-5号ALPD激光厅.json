@@ -1,6 +1,7 @@
 {
 	"maxRow": 15,
 	"maxCol": 27,
+	"order": "left",
 	"blockInfo": [{
 			"row": "1-4",
 			"col": 1,
