@@ -7,13 +7,14 @@ var maxCol = 0
 var proof = ""
 var order = ""
 var beforeChild = null
+var additional = ""
 
 function doSubmit() {
     if (chooseNum == 0) {
         alert("请至少选择一个座位")
         return false
     }
-    var pack = {"proof": proof, "seatInfo": []}
+    var pack = {"proof": proof, "seatInfo": [], "additional": additional}
     for (let [key, value] of chooseSeat) {
         pack["seatInfo"].push({
             "row": Number(value.getAttribute("row")),
@@ -264,6 +265,7 @@ function readData() {
     maxCol = seatData["maxCol"]
     proof = seatData["proof"]
     order = seatData["order"]
+    additional = seatData["additional"]
     // 读取排序座位信息
     let si = seatData["seatInfo"]
     si.sort(seatSortFunc)

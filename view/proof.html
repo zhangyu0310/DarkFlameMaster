@@ -80,12 +80,15 @@
 
     <br><br><br>
 
-    <h1>
-        {{ .proofName }}
-    </h1>
-
     <form action="choose_seat" method="get" id="proofForm">
-        <input type="text" name="proof" id="proof" size="40"/><br><br>
+        <h1>
+            {{ .proofName }}
+        </h1>
+        <input type="text" name="proof" id="proof" size="40"/>
+        <h1>
+            {{ .additionalName }}
+        </h1>
+        <input type="text" name="additional" id="additional" size="40"/><br><br>
     </form>
     <form action="check_tickets" method="post" id="checkForm">
         <input type="hidden" name="check" id="check"/>

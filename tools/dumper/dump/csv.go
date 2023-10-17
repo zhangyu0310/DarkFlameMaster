@@ -1,20 +1,26 @@
 package dump
 
 import (
+	"DarkFlameMaster/config"
 	"DarkFlameMaster/ticket"
 	"encoding/csv"
 	"fmt"
-	"os"
+	"io"
 )
 
-func ToCSV(filePath string, tk []*ticket.Ticket) error {
-	// create dump file and write data
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
+func ToCSV(w io.Writer, tk []*ticket.Ticket) error {
+	cfg := config.GetGlobalConfig()
+	proofName := cfg.ProofName
+	additionalName := cfg.AdditionalName
+	if proofName == "" {
+		proofName = "CustomerProof"
 	}
-	writer := csv.NewWriter(file)
-	err = writer.Write([]string{"ID", "CustomerProof", "Row", "Column", "CreateTime"})
+	if additionalName == "" {
+		additionalName = "Additional"
+	}
+
+	writer := csv.NewWriter(w)
+	err := writer.Write([]string{"ID", proofName, "Row", "Column", "CreateTime", additionalName})
 	if err != nil {
 		return err
 	}
@@ -24,12 +30,12 @@ func ToCSV(filePath string, tk []*ticket.Ticket) error {
 			t.CustomerProof,
 			fmt.Sprintf("%d", t.Row),
 			fmt.Sprintf("%d", t.Column),
-			t.CreateTime.Format("2006-01-02 15:04:05")})
+			t.CreateTime.Format("2006-01-02 15:04:05"),
+			t.Additional})
 		if err != nil {
 			return err
 		}
 	}
 	writer.Flush()
-	_ = file.Close()
 	return nil
 }

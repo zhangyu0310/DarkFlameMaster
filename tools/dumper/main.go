@@ -4,6 +4,7 @@ import (
 	"DarkFlameMaster/tools/dumper/dump"
 	"flag"
 	"fmt"
+	"os"
 	"sort"
 	"time"
 )
@@ -30,8 +31,14 @@ func main() {
 	})
 	fileName := fmt.Sprintf("dump_tickets_%s.csv",
 		time.Now().Format("20060102150405"))
-	err = dump.ToCSV(fileName, tickets)
+	// create dump file and write data
+	file, err := os.Create(fileName)
 	if err != nil {
 		panic(err)
 	}
+	err = dump.ToCSV(file, tickets)
+	if err != nil {
+		panic(err)
+	}
+	_ = file.Close()
 }

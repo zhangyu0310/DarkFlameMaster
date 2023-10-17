@@ -6,5 +6,7 @@
   "CustomerType": "NoPay",
   "CustomerFile": "./data/customer.json",
   "ChooseSeatStrategy": "NoLimit",
-  "LogPath": "./run"
+  "LogPath": "./run",
+  "ProofName": "QQ号",
+  "AdditionalName": "支付宝账号"
 }

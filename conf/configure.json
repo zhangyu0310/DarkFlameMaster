@@ -6,5 +6,7 @@
   "CustomerType": "",
   "CustomerFile": "",
   "ChooseSeatStrategy": "",
-  "LogPath": ""
+  "LogPath": "",
+  "ProofName": "",
+  "AdditionalName": ""
 }

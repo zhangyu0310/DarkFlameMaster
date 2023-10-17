@@ -77,7 +77,7 @@ func unlockAllSeats(seats []*seat.Seat, target *seat.Seat) {
 }
 
 func (m *TicketManager) makeTickets(customer *customer.Customer,
-	seats []*seat.Seat) ([]*ticket.Ticket, error) {
+	seats []*seat.Seat, additional string) ([]*ticket.Ticket, error) {
 	// Lock seats and check its status.
 	for _, s := range seats {
 		s.Lock()
@@ -91,7 +91,7 @@ func (m *TicketManager) makeTickets(customer *customer.Customer,
 	// All seats are available and locked, make tickets.
 	tickets := make([]*ticket.Ticket, 0, len(seats))
 	for _, s := range seats {
-		t := ticket.NewTicket(customer.Proof, s.Row, s.Column)
+		t := ticket.NewTicket(customer.Proof, s.Row, s.Column, additional)
 		tickets = append(tickets, t)
 	}
 	// Save tickets to database.
@@ -169,13 +169,31 @@ func (m *TicketManager) DeleteTicketsBySeats(seats []*seat.Seat) error {
 	return m.DeleteTicketsByIds(ids)
 }
 
+func (m *TicketManager) DeleteTicketsByUsers(users []string) error {
+	ids := make([]string, 0)
+	for _, user := range users {
+		cus, err := customer.GetCustomer(user)
+		if err != nil {
+			zlog.Error("Get customer failed, err:", err)
+			return err
+		}
+		if cus.Tickets == nil {
+			continue
+		}
+		for _, tk := range cus.Tickets {
+			ids = append(ids, tk.ID)
+		}
+	}
+	return m.DeleteTicketsByIds(ids)
+}
+
 func Init() error {
 	mgr = &TicketManager{}
 	return mgr.init()
 }
 
-func MakeTickets(c *customer.Customer, seats []*seat.Seat) ([]*ticket.Ticket, error) {
-	return mgr.makeTickets(c, seats)
+func MakeTickets(c *customer.Customer, seats []*seat.Seat, additional string) ([]*ticket.Ticket, error) {
+	return mgr.makeTickets(c, seats, additional)
 }
 
 func Dump() ([]*ticket.Ticket, error) {
@@ -192,4 +210,8 @@ func DeleteTicketsByIds(ids []string) error {
 
 func DeleteTicketsBySeats(seats []*seat.Seat) error {
 	return mgr.DeleteTicketsBySeats(seats)
+}
+
+func DeleteTicketsByUsers(users []string) error {
+	return mgr.DeleteTicketsByUsers(users)
 }

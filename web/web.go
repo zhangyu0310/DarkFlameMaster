@@ -2,6 +2,7 @@ package web
 
 import (
 	"DarkFlameMaster/cinema"
+	"DarkFlameMaster/config"
 	"DarkFlameMaster/customer"
 	"DarkFlameMaster/seat"
 	"DarkFlameMaster/ticket/tkmgr"
@@ -72,22 +73,26 @@ type SendMsg struct {
 	Order        string         `json:"order"`
 	SeatInfo     []*SeatWrapper `json:"seatInfo"`
 	BlockInfo    []*seat.Block  `json:"blockInfo"`
+	Additional   string         `json:"additional"`
 }
 
 type ReceiveMsg struct {
-	Proof    string       `json:"proof"`
-	SeatInfo []*seat.Seat `json:"seatInfo"`
+	Proof      string       `json:"proof"`
+	SeatInfo   []*seat.Seat `json:"seatInfo"`
+	Additional string       `json:"additional"`
 }
 
 func Proof(context *gin.Context) {
+	cfg := config.GetGlobalConfig()
 	context.HTML(http.StatusOK, "proof.html",
 		gin.H{
-			"title":     "Dark Flame Master - Choose Seat",
-			"proofName": "QQ号",
+			"title":          "Dark Flame Master - Choose Seat",
+			"proofName":      cfg.ProofName,
+			"additionalName": cfg.AdditionalName,
 		})
 }
 
-func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
+func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg, additional string) {
 	// 打包发送数据
 	si, bl, maxRow, maxCol, order := cinema.GetSeatMap()
 	seatWrapper := make([]*SeatWrapper, 0, len(si))
@@ -112,6 +117,7 @@ func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg string) {
 		Order:        order,
 		SeatInfo:     seatWrapper,
 		BlockInfo:    bl,
+		Additional:   additional,
 	}
 	data, err := json.Marshal(sendData)
 	if err != nil {
@@ -142,6 +148,7 @@ func ChooseSeat(context *gin.Context) {
 			errMsg = "当前订单暂时还无法进行选座！"
 		}
 	}
+	additional := context.Query("additional")
 	if errMsg != "" {
 		context.HTML(http.StatusOK, "proof.html",
 			gin.H{
@@ -149,7 +156,7 @@ func ChooseSeat(context *gin.Context) {
 				"error": errMsg,
 			})
 	} else {
-		sendDataToWeb(context, cus, errMsg)
+		sendDataToWeb(context, cus, errMsg, additional)
 	}
 }
 
@@ -173,13 +180,13 @@ func ChooseResult(context *gin.Context) {
 			zlog.Fatal("GetCustomer failed when choose result, err:", err)
 		}
 		seats := cinema.AssociateSeats(reMsg.SeatInfo)
-		tk, err := tkmgr.MakeTickets(cus, seats)
+		tk, err := tkmgr.MakeTickets(cus, seats, reMsg.Additional)
 		if err != nil {
 			zlog.Error("Make tickets failed, err:", err)
 			errMsg = "选座失败！"
 		}
 		zlog.DebugF("Tickets: %v", tk)
-		sendDataToWeb(context, cus, errMsg)
+		sendDataToWeb(context, cus, errMsg, reMsg.Additional)
 	}
 }
 

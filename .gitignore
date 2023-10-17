@@ -29,3 +29,6 @@ zlogger*
 
 # Run dir
 run
+
+# Data dump files
+dump_tickets_*.csv

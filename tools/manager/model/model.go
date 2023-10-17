@@ -2,6 +2,7 @@ package model
 
 import (
 	"DarkFlameMaster/seat"
+	"DarkFlameMaster/tools/manager/config"
 	"DarkFlameMaster/web"
 	"encoding/json"
 	"fmt"
@@ -12,8 +13,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const listHeight = 14
@@ -203,7 +206,8 @@ func (m Model) updateChooseProgram(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) updateDumpData(_ tea.Msg) (tea.Model, tea.Cmd) {
-	resp, err := http.Get("http://127.0.0.1:1219/dump_tickets")
+	cfg := config.GetGlobalConfig()
+	resp, err := http.Get(cfg.Server + "/dump_tickets")
 	if err != nil {
 		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
@@ -216,12 +220,16 @@ func (m Model) updateDumpData(_ tea.Msg) (tea.Model, tea.Cmd) {
 		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
 	}
-	if string(body) == "ok" {
-		return m, tea.Quit
-	} else {
-		err = errMsg(fmt.Errorf("导出数据失败: %s", string(body)))
+	// write ticket information (csv data) to file.
+	fileName := fmt.Sprintf("dump_tickets_%s.csv",
+		time.Now().Format("20060102150405"))
+	// create dump file and write data
+	err = os.WriteFile(fileName, body, 0644)
+	if err != nil {
+		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
 	}
+	return m, tea.Quit
 }
 
 func (m Model) updateDeleteSeat(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -274,6 +282,7 @@ func (m Model) updateDeleteSeat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) updateDeleteSeatBySeat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	cfg := config.GetGlobalConfig()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -315,7 +324,7 @@ func (m Model) updateDeleteSeatBySeat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return handleErr(err)
 			}
-			resp, err := http.Post("http://127.0.0.1:1219/delete_tickets",
+			resp, err := http.Post(cfg.Server+"/delete_tickets",
 				"application/json", strings.NewReader(string(data)))
 			if err != nil {
 				m.err = errMsg(err)
@@ -350,6 +359,7 @@ func (m Model) updateDeleteSeatBySeat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) updateDeleteSeatByUserID(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	cfg := config.GetGlobalConfig()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -368,14 +378,14 @@ func (m Model) updateDeleteSeatByUserID(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			req := web.DeleteTicketsReq{
-				Mode: "id",
-				Ids:  []string{userId},
+				Mode:  "user",
+				Users: []string{userId},
 			}
 			data, err := json.Marshal(req)
 			if err != nil {
 				return handleErr(err)
 			}
-			resp, err := http.Post("http://127.0.0.1:1219/delete_tickets",
+			resp, err := http.Post(cfg.Server+"/delete_tickets",
 				"application/json", strings.NewReader(string(data)))
 			if err != nil {
 				m.err = errMsg(err)

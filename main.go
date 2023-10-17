@@ -15,8 +15,10 @@ import (
 	"syscall"
 )
 
+var configPath = flag.String("config", "./conf/configure.json", "config path - json format")
+
 func initConfig(cfg *config.Config) {
-	config.ReadConfig("./conf/configure.json", cfg)
+	config.ReadConfig(*configPath, cfg)
 	_ = zlog.New(cfg.LogPath, "zlogger", true, zlog.LogLevelDebug)
 }
 

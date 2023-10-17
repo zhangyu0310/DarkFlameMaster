@@ -5,13 +5,11 @@ import (
 	"DarkFlameMaster/ticket/tkmgr"
 	"DarkFlameMaster/tools/dumper/dump"
 	"encoding/json"
-	"fmt"
 	zlog "github.com/zhangyu0310/zlogger"
 	"io"
 	"net/http"
 	"sort"
 	"strings"
-	"time"
 )
 
 func dumpTickets(w http.ResponseWriter, _ *http.Request) {
@@ -25,22 +23,20 @@ func dumpTickets(w http.ResponseWriter, _ *http.Request) {
 	sort.Slice(tk, func(i, j int) bool {
 		return tk[i].CreateTime.Before(tk[j].CreateTime)
 	})
-	// create dump file and write data
-	fileName := fmt.Sprintf("dump_tickets_%s.csv",
-		time.Now().Format("20060102150405"))
-	err = dump.ToCSV(fileName, tk)
+	// write csv data to response
+	err = dump.ToCSV(w, tk)
 	if err != nil {
 		zlog.ErrorF("dump tickets failed, err: %s\n", err)
 		_, _ = w.Write([]byte(err.Error()))
 		return
 	}
-	_, _ = w.Write([]byte("ok"))
 }
 
 type DeleteTicketsReq struct {
 	Mode  string       `json:"mode"`
 	Ids   []string     `json:"ids"`
 	Seats []*seat.Seat `json:"seats"`
+	Users []string     `json:"users"`
 }
 
 func deleteTickets(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +56,8 @@ func deleteTickets(w http.ResponseWriter, r *http.Request) {
 		err = tkmgr.DeleteTicketsByIds(req.Ids)
 	case "seat":
 		err = tkmgr.DeleteTicketsBySeats(req.Seats)
+	case "user":
+		err = tkmgr.DeleteTicketsByUsers(req.Users)
 	default:
 		zlog.Error("invalid mode:", req.Mode)
 		_, _ = w.Write([]byte("invalid mode"))
@@ -76,7 +74,7 @@ func RunAdminServer() {
 	http.HandleFunc("/dump_tickets", dumpTickets)
 	http.HandleFunc("/delete_tickets", deleteTickets)
 	go func() {
-		if err := http.ListenAndServe("127.0.0.1:1219", nil); err != nil &&
+		if err := http.ListenAndServe("0.0.0.0:1219", nil); err != nil &&
 			err != http.ErrServerClosed {
 			zlog.FatalF("listen: %s\n", err)
 		}

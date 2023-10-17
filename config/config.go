@@ -22,6 +22,9 @@ type Config struct {
 	CustomerFile       string             `json:"CustomerFile"`
 	ChooseSeatStrategy ChooseSeatStrategy `json:"ChooseSeatStrategy"`
 	LogPath            string             `json:"LogPath"`
+	// Input label
+	ProofName      string `json:"ProofName"`
+	AdditionalName string `json:"AdditionalName"`
 }
 
 var defaultConfig = Config{
@@ -33,6 +36,8 @@ var defaultConfig = Config{
 	CustomerFile:       "./data/customer.json",
 	ChooseSeatStrategy: NoLimit,
 	LogPath:            "./run/log",
+	ProofName:          "",
+	AdditionalName:     "",
 }
 
 type SeatFileType string
