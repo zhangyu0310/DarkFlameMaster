@@ -4,8 +4,9 @@ import (
 	"DarkFlameMaster/config"
 	"DarkFlameMaster/ticket"
 	"errors"
-	zlog "github.com/zhangyu0310/zlogger"
 	"time"
+
+	zlog "github.com/zhangyu0310/zlogger"
 )
 
 var (
@@ -16,35 +17,44 @@ var (
 var cusMgr *Manager
 
 type Manager struct {
-	reader   Reader
+	storage  Storage
 	strategy Strategy
 }
 
 func (mgr *Manager) Init() error {
 	cfg := config.GetGlobalConfig()
-	var reader Reader
+	var storage Storage
 	switch cfg.CustomerType {
 	case config.AliPay:
-		reader = &AliPayCustomerInfoReader{}
+		storage = &AliPayCustomerInfoStorage{}
 	case config.WeChat:
+		panic("implement me")
+	case config.QQNum:
+		storage = &QQNumCustomerInfoStorage{}
 	case config.NoPay:
-		reader = &NoPayCustomerInfoReader{}
+		storage = &NoPayCustomerInfoStorage{}
 	case config.TestCF:
-		reader = &TestCustomerInfoReader{}
+		storage = &TestCustomerInfoStorage{}
 	default:
-		reader = &TestCustomerInfoReader{}
+		storage = &TestCustomerInfoStorage{}
 	}
-	err := reader.Init(cfg.CustomerFile)
+	err := storage.Init(cfg.CustomerFile)
 	if err != nil {
 		zlog.Error("Init customer file reader failed, err:", err)
 		return err
 	}
-	cus, err := reader.Read()
+	customer, err := storage.Read()
 	if err != nil {
 		zlog.Error("Read customer info failed, err:", err)
 		return err
 	}
-	mgr.reader = reader
+	mgr.storage = storage
+	_ = mgr.storage.AddCustomer(&Customer{
+		Proof:     "poppin_root",
+		PayTime:   time.Now(),
+		TicketNum: 2333,
+		Tickets:   nil,
+	})
 
 	switch cfg.ChooseSeatStrategy {
 	case config.PayTimeOneByOne:
@@ -54,7 +64,7 @@ func (mgr *Manager) Init() error {
 	default:
 		mgr.strategy = &NoLimit{}
 	}
-	err = mgr.strategy.Init(cus)
+	err = mgr.strategy.Init(customer)
 	if err != nil {
 		zlog.Error("Init choose seat strategy failed, err:", err)
 		return err
@@ -63,7 +73,7 @@ func (mgr *Manager) Init() error {
 }
 
 func (mgr *Manager) GetCustomer(proof string) (*Customer, error) {
-	return mgr.reader.GetCustomerInfo(proof)
+	return mgr.storage.GetCustomerInfo(proof)
 }
 
 func (mgr *Manager) CanChooseSeat(cus *Customer) bool {

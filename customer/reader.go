@@ -2,63 +2,75 @@ package customer
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	zlog "github.com/zhangyu0310/zlogger"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/xuri/excelize/v2"
+	zlog "github.com/zhangyu0310/zlogger"
 )
 
-type Reader interface {
+type Storage interface {
 	Init(string) error
 	Read() (map[string]*Customer, error)
 	GetCustomerInfo(string) (*Customer, error)
+	AddCustomer(*Customer) error
 }
 
-type AliPayCustomerInfoReader struct {
-	infoFilePath string
-	customers    map[string]*Customer
-}
-
-func (r *AliPayCustomerInfoReader) Init(customerFilePath string) error {
-	r.infoFilePath = customerFilePath
-	r.customers = make(map[string]*Customer)
-	return nil
-}
-
-// TODO: 实现读取支付宝账单信息
-func (r *AliPayCustomerInfoReader) Read() (map[string]*Customer, error) {
-	data, err := os.ReadFile(r.infoFilePath)
-	if err != nil {
-		zlog.Error("Read customer info file failed, err:", err)
-		return nil, err
-	}
-	fmt.Println(string(data))
-	return nil, nil
-}
-
-func (r *AliPayCustomerInfoReader) GetCustomerInfo(proof string) (*Customer, error) {
-	cus, ok := r.customers[proof]
+func normalGetCustomerInfo(customers map[string]*Customer, proof string) (*Customer, error) {
+	cus, ok := customers[proof]
 	if !ok {
 		return nil, ErrCustomerNotExist
 	}
 	return cus, nil
 }
 
-type TestCustomerInfoReader struct {
-	customers map[string]*Customer
+type AliPayCustomerInfoStorage struct {
+	infoFilePath string
+	customers    map[string]*Customer
 }
 
-func (r *TestCustomerInfoReader) Init(string) error {
+func (r *AliPayCustomerInfoStorage) Init(customerFilePath string) error {
+	r.infoFilePath = customerFilePath
 	r.customers = make(map[string]*Customer)
 	return nil
 }
 
-func (r *TestCustomerInfoReader) Read() (map[string]*Customer, error) {
-	customers := make(map[string]*Customer)
+// TODO: 实现读取支付宝账单信息
+func (r *AliPayCustomerInfoStorage) Read() (map[string]*Customer, error) {
+	data, err := os.ReadFile(r.infoFilePath)
+	if err != nil {
+		zlog.Error("Read customer info file failed, err:", err)
+		return nil, err
+	}
+	fmt.Println(string(data))
+	panic("implement me")
+	return nil, nil
+}
+
+func (r *AliPayCustomerInfoStorage) GetCustomerInfo(proof string) (*Customer, error) {
+	return normalGetCustomerInfo(r.customers, proof)
+}
+
+func (r *AliPayCustomerInfoStorage) AddCustomer(customer *Customer) error {
+	r.customers[customer.Proof] = customer
+	return nil
+}
+
+type TestCustomerInfoStorage struct {
+	customers map[string]*Customer
+}
+
+func (r *TestCustomerInfoStorage) Init(string) error {
+	r.customers = make(map[string]*Customer)
+	return nil
+}
+
+func (r *TestCustomerInfoStorage) Read() (map[string]*Customer, error) {
 	for i := 0; i < 50; i++ {
 		id := uuid.NewString()
 		fmt.Println(id)
-		customers[id] = &Customer{
+		r.customers[id] = &Customer{
 			Proof:     id,
 			PayTime:   time.Now(),
 			TicketNum: 1,
@@ -66,31 +78,81 @@ func (r *TestCustomerInfoReader) Read() (map[string]*Customer, error) {
 		}
 	}
 
-	return customers, nil
+	return r.customers, nil
 }
 
-func (r *TestCustomerInfoReader) GetCustomerInfo(proof string) (*Customer, error) {
-	cus, ok := r.customers[proof]
-	if !ok {
-		return nil, ErrCustomerNotExist
-	}
-	return cus, nil
+func (r *TestCustomerInfoStorage) GetCustomerInfo(proof string) (*Customer, error) {
+	return normalGetCustomerInfo(r.customers, proof)
 }
 
-type NoPayCustomerInfoReader struct {
-	customers map[string]*Customer
+func (r *TestCustomerInfoStorage) AddCustomer(customer *Customer) error {
+	r.customers[customer.Proof] = customer
+	return nil
 }
 
-func (r *NoPayCustomerInfoReader) Init(string) error {
+type QQNumCustomerInfoStorage struct {
+	infoFilePath string
+	customers    map[string]*Customer
+}
+
+func (r *QQNumCustomerInfoStorage) Init(file string) error {
+	r.infoFilePath = file
 	r.customers = make(map[string]*Customer)
 	return nil
 }
 
-func (r *NoPayCustomerInfoReader) Read() (map[string]*Customer, error) {
+func (r *QQNumCustomerInfoStorage) Read() (map[string]*Customer, error) {
+	f, err := excelize.OpenFile(r.infoFilePath)
+	if err != nil {
+		zlog.Error("Open customer info excel failed, err:", err)
+		return nil, err
+	}
+	defer func() {
+		// Close the spreadsheet.
+		if err := f.Close(); err != nil {
+			zlog.Error("Close customer info excel failed, err:", err)
+		}
+	}()
+	// Get all the rows in the Sheet1.
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		zlog.Error("Get all rows from customer info excel failed, err:", err)
+		return nil, err
+	}
+	for _, row := range rows {
+		r.customers[row[0]] = &Customer{
+			Proof:     row[0],
+			PayTime:   time.Now(),
+			TicketNum: 3, // TODO: Max ticket can be setting.
+			Tickets:   nil,
+		}
+	}
 	return nil, nil
 }
 
-func (r *NoPayCustomerInfoReader) GetCustomerInfo(proof string) (*Customer, error) {
+func (r *QQNumCustomerInfoStorage) GetCustomerInfo(proof string) (*Customer, error) {
+	return normalGetCustomerInfo(r.customers, proof)
+}
+
+func (r *QQNumCustomerInfoStorage) AddCustomer(customer *Customer) error {
+	r.customers[customer.Proof] = customer
+	return nil
+}
+
+type NoPayCustomerInfoStorage struct {
+	customers map[string]*Customer
+}
+
+func (r *NoPayCustomerInfoStorage) Init(string) error {
+	r.customers = make(map[string]*Customer)
+	return nil
+}
+
+func (r *NoPayCustomerInfoStorage) Read() (map[string]*Customer, error) {
+	return nil, nil
+}
+
+func (r *NoPayCustomerInfoStorage) GetCustomerInfo(proof string) (*Customer, error) {
 	cus, ok := r.customers[proof]
 	if !ok {
 		cus = &Customer{
@@ -101,4 +163,9 @@ func (r *NoPayCustomerInfoReader) GetCustomerInfo(proof string) (*Customer, erro
 		r.customers[proof] = cus
 	}
 	return cus, nil
+}
+
+func (r *NoPayCustomerInfoStorage) AddCustomer(customer *Customer) error {
+	r.customers[customer.Proof] = customer
+	return nil
 }

@@ -2,10 +2,11 @@ package config
 
 import (
 	"encoding/json"
-	zlog "github.com/zhangyu0310/zlogger"
 	"os"
 	"strings"
 	"sync/atomic"
+
+	zlog "github.com/zhangyu0310/zlogger"
 )
 
 // Config Configurations of server.
@@ -54,6 +55,7 @@ type CustomerType string
 const (
 	AliPay CustomerType = "alipay"
 	WeChat CustomerType = "wechat"
+	QQNum  CustomerType = "qqnum"
 	NoPay  CustomerType = "nopay"
 	TestCF CustomerType = "test"
 )
