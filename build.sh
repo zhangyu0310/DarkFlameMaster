@@ -22,16 +22,17 @@ mkdir DarkFlameMaster/tools
 mkdir DarkFlameMaster/tools/seatmaker
 
 cd ./tools/dumper || exit
-go build -o dumper
-mv dumper ../../DarkFlameMaster/tools
+go build -ldflags "-X DarkFlameMaster/serverinfo.ServerInfo=$SERVER_INFO"
+mv dumper* ../../DarkFlameMaster/tools
 
 cd ../manager || exit
-go build -o manager
-mv manager ../../DarkFlameMaster/tools
+go build -ldflags "-X DarkFlameMaster/serverinfo.ServerInfo=$SERVER_INFO"
+mv manager* ../../DarkFlameMaster/tools
+cp configure.json ../../DarkFlameMaster/tools
 
 cd ../seatmaker || exit
-go build -o seatmaker
-mv seatmaker ../../DarkFlameMaster/tools/seatmaker
+go build -ldflags "-X DarkFlameMaster/serverinfo.ServerInfo=$SERVER_INFO"
+mv seatmaker* ../../DarkFlameMaster/tools/seatmaker
 cp -r view ../../DarkFlameMaster/tools/seatmaker
 
 cd ../..

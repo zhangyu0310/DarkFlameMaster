@@ -1,7 +1,10 @@
 package main
 
 import (
+	"DarkFlameMaster/serverinfo"
 	"context"
+	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	zlog "github.com/zhangyu0310/zlogger"
 	"net/http"
@@ -11,8 +14,21 @@ import (
 	"time"
 )
 
-// TODO: 实现
 func main() {
+	v := flag.Bool("v", false, "show version")
+	vv := flag.Bool("version", false, "show version")
+	h := flag.Bool("h", false, "show help")
+	hh := flag.Bool("help", false, "show help")
+	flag.Parse()
+	if *v || *vv {
+		fmt.Println(serverinfo.Get().String())
+		return
+	}
+	if *h || *hh {
+		flag.Usage()
+		return
+	}
+
 	srv := RunWebServer()
 
 	quit := make(chan os.Signal)

@@ -40,7 +40,10 @@ func InitInformation() {
 
 func Get() *Information {
 	if info == nil {
-		panic("ServerInfo is not initialized")
+		InitInformation()
+		if info == nil {
+			panic("ServerInfo is not initialized")
+		}
 	}
 	return info
 }

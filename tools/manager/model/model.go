@@ -2,6 +2,7 @@ package model
 
 import (
 	"DarkFlameMaster/seat"
+	"DarkFlameMaster/serverinfo"
 	"DarkFlameMaster/tools/manager/config"
 	"DarkFlameMaster/web"
 	"encoding/json"
@@ -71,6 +72,7 @@ type Model struct {
 	success  bool
 	err      error
 	quitting bool
+	about    bool
 }
 
 type Step string
@@ -87,6 +89,7 @@ func NewModel() *Model {
 	items := []list.Item{
 		item("删除座位"),
 		item("导出数据"),
+		item("关于"),
 	}
 
 	const defaultWidth = 20
@@ -107,6 +110,7 @@ func NewModel() *Model {
 		success:  false,
 		err:      nil,
 		quitting: false,
+		about:    false,
 	}
 }
 
@@ -193,6 +197,10 @@ func (m Model) updateChooseProgram(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.step = StepDeleteSeat
 			case "导出数据":
 				m.step = StepDumpData
+			case "关于":
+				m.quitting = true
+				m.about = true
+				return m, tea.Quit
 			default:
 				panic("invalid choice")
 				return m, tea.Quit
@@ -420,6 +428,11 @@ func (m Model) updateDeleteSeatByUserID(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) viewChooseProgram() string {
 	if m.quitting {
+		if m.about {
+			aboutStr := "MIT License\n\nCopyright (c) 2023 poppinzhang\n" +
+				serverinfo.Get().String() + "\n\n"
+			return quitTextStyle.Render(aboutStr)
+		}
 		return quitTextStyle.Render("See you later!\n\n")
 	}
 	return "\n" + m.list.View()

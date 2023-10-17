@@ -23,7 +23,6 @@ func initConfig(cfg *config.Config) {
 }
 
 func main() {
-	serverinfo.InitInformation()
 	v := flag.Bool("v", false, "show version")
 	vv := flag.Bool("version", false, "show version")
 	h := flag.Bool("h", false, "show help")

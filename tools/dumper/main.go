@@ -1,6 +1,7 @@
 package main
 
 import (
+	"DarkFlameMaster/serverinfo"
 	"DarkFlameMaster/tools/dumper/dump"
 	"flag"
 	"fmt"
@@ -15,6 +16,20 @@ var (
 )
 
 func main() {
+	v := flag.Bool("v", false, "show version")
+	vv := flag.Bool("version", false, "show version")
+	h := flag.Bool("h", false, "show help")
+	hh := flag.Bool("help", false, "show help")
+	flag.Parse()
+	if *v || *vv {
+		fmt.Println(serverinfo.Get().String())
+		return
+	}
+	if *h || *hh {
+		flag.Usage()
+		return
+	}
+
 	var dumper dump.Dump
 	switch dbType {
 	case "leveldb":

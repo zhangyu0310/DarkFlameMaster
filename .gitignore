@@ -32,3 +32,6 @@ run
 
 # Data dump files
 dump_tickets_*.csv
+
+# Build products
+DarkFlameMaster.tgz
