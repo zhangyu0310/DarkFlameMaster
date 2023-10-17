@@ -16,6 +16,7 @@ cp -r bin/* DarkFlameMaster
 cp -r data DarkFlameMaster
 cp -r view DarkFlameMaster
 cp -r conf DarkFlameMaster
+cp README.md DarkFlameMaster
 
 mkdir DarkFlameMaster/tools
 mkdir DarkFlameMaster/tools/seatmaker
