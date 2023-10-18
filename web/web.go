@@ -142,18 +142,9 @@ func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg, additiona
 func ChooseSeat(context *gin.Context) {
 	cfg := config.GetGlobalConfig()
 	proof := context.Query("proof")
-	cus, err := customer.GetCustomer(proof)
-	errMsg := ""
-	if err != nil {
-		zlog.DebugF("GetCustomer failed. Proof [%s] err: %s", proof, err)
-		errMsg = "凭证号码不存在！请检查后重新选座。"
-	} else {
-		if !customer.CanChooseSeat(cus) {
-			errMsg = "当前凭证号码暂时还无法进行选座！"
-		}
-	}
 	additional := context.Query("additional")
-	if errMsg != "" {
+
+	handleErr := func(errMsg string) {
 		context.HTML(http.StatusOK, "proof.html",
 			gin.H{
 				"title":          "Dark Flame Master - Choose Seat",
@@ -161,9 +152,28 @@ func ChooseSeat(context *gin.Context) {
 				"additionalName": cfg.AdditionalName,
 				"error":          errMsg,
 			})
-	} else {
-		sendDataToWeb(context, cus, errMsg, additional)
 	}
+
+	if proof == "" {
+		handleErr(fmt.Sprintf("%s不能为空！", cfg.ProofName))
+		return
+	}
+	if cfg.AdditionalName != "" && additional == "" {
+		handleErr(fmt.Sprintf("%s不能为空！", cfg.AdditionalName))
+		return
+	}
+	cus, err := customer.GetCustomer(proof)
+	if err != nil {
+		zlog.DebugF("GetCustomer failed. Proof [%s] err: %s", proof, err)
+		handleErr(fmt.Sprintf("%s不存在！请检查后重新选座。", cfg.ProofName))
+		return
+	} else {
+		if !customer.CanChooseSeat(cus) {
+			handleErr(fmt.Sprintf("当前%s暂时还无法进行选座！", cfg.ProofName))
+			return
+		}
+	}
+	sendDataToWeb(context, cus, "", additional)
 }
 
 func ChooseResult(context *gin.Context) {
@@ -190,7 +200,7 @@ func ChooseResult(context *gin.Context) {
 		}
 		if cus.TicketNum-uint(len(cus.Tickets)) < uint(len(reMsg.SeatInfo)) {
 			zlog.Error("reMsg set info invalid.")
-			errMsg = "选座失败！当前凭证剩余票数不足！"
+			errMsg = fmt.Sprintf("选座失败！当前%s剩余票数不足！", cfg.ProofName)
 		} else {
 			seats := cinema.AssociateSeats(reMsg.SeatInfo)
 			tk, err := tkmgr.MakeTickets(cus, seats, reMsg.Additional)

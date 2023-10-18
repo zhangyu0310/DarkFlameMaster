@@ -19,7 +19,11 @@ var configPath = flag.String("config", "./conf/configure.json", "config path - j
 
 func initConfig(cfg *config.Config) {
 	config.ReadConfig(*configPath, cfg)
-	_ = zlog.New(cfg.LogPath, "zlogger", true, zlog.LogLevelDebug)
+	if serverinfo.Get().BuildMode == "release" {
+		_ = zlog.New(cfg.LogPath, "zlogger", true, zlog.LogLevelWarn)
+	} else {
+		_ = zlog.New(cfg.LogPath, "zlogger", true, zlog.LogLevelDebug)
+	}
 }
 
 func main() {
