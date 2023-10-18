@@ -1,10 +1,12 @@
 package web
 
 import (
+	"DarkFlameMaster/config"
 	"DarkFlameMaster/seat"
 	"DarkFlameMaster/ticket/tkmgr"
 	"DarkFlameMaster/tools/dumper/dump"
 	"encoding/json"
+	"fmt"
 	zlog "github.com/zhangyu0310/zlogger"
 	"io"
 	"net/http"
@@ -71,10 +73,17 @@ func deleteTickets(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunAdminServer() {
+	cfg := config.GetGlobalConfig()
+	var addr string
+	if cfg.AdminLocalOnly {
+		addr = fmt.Sprintf("127.0.0.1:%d", cfg.AdminPort)
+	} else {
+		addr = fmt.Sprintf(":%d", cfg.AdminPort)
+	}
 	http.HandleFunc("/dump_tickets", dumpTickets)
 	http.HandleFunc("/delete_tickets", deleteTickets)
 	go func() {
-		if err := http.ListenAndServe("0.0.0.0:1219", nil); err != nil &&
+		if err := http.ListenAndServe(addr, nil); err != nil &&
 			err != http.ErrServerClosed {
 			zlog.FatalF("listen: %s\n", err)
 		}

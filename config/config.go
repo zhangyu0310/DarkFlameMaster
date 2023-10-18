@@ -26,7 +26,10 @@ type Config struct {
 	ProofName      string `json:"ProofName"`
 	AdditionalName string `json:"AdditionalName"`
 	// Admin
-	RootUserName string `json:"RootUserName"`
+	RootUserName   string `json:"RootUserName"`
+	ServicePort    uint   `json:"ServicePort"`
+	AdminPort      uint   `json:"AdminPort"`
+	AdminLocalOnly bool   `json:"AdminLocalOnly"`
 }
 
 var defaultConfig = Config{
@@ -40,6 +43,10 @@ var defaultConfig = Config{
 	LogPath:            "./run/log",
 	ProofName:          "",
 	AdditionalName:     "",
+	RootUserName:       "",
+	ServicePort:        718,
+	AdminPort:          1219,
+	AdminLocalOnly:     true,
 }
 
 type SeatFileType string
@@ -100,6 +107,12 @@ func ReadConfig(path string, cfg *Config) {
 	cfg.SeatFileType = SeatFileType(strings.ToLower(string(cfg.SeatFileType)))
 	cfg.CustomerType = CustomerType(strings.ToLower(string(cfg.CustomerType)))
 	cfg.ChooseSeatStrategy = ChooseSeatStrategy(strings.ToLower(string(cfg.ChooseSeatStrategy)))
+	if cfg.ServicePort == 0 {
+		cfg.ServicePort = 718
+	}
+	if cfg.AdminPort == 0 {
+		cfg.AdminPort = 1219
+	}
 }
 
 // GetGlobalConfig returns the global configuration for this server.

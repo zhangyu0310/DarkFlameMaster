@@ -9,5 +9,8 @@
   "LogPath": "",
   "ProofName": "",
   "AdditionalName": "",
-  "RootUserName": ""
+  "RootUserName": "",
+  "ServicePort": 0,
+  "AdminPort": 0,
+  "AdminLocalOnly": true
 }

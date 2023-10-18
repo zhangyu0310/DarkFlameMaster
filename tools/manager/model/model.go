@@ -134,8 +134,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.step {
 	case StepChooseProgram:
 		return m.updateChooseProgram(msg)
-	case StepDumpData:
-		return m.updateDumpData(msg)
 	case StepDeleteSeat:
 		return m.updateDeleteSeat(msg)
 	case StepDeleteSeatBySeat:
@@ -197,6 +195,7 @@ func (m Model) updateChooseProgram(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.step = StepDeleteSeat
 			case "导出数据":
 				m.step = StepDumpData
+				return m.updateDumpData(msg)
 			case "关于":
 				m.quitting = true
 				m.about = true
@@ -217,7 +216,7 @@ func (m Model) updateDumpData(_ tea.Msg) (tea.Model, tea.Cmd) {
 	cfg := config.GetGlobalConfig()
 	resp, err := http.Get(cfg.Server + "/dump_tickets")
 	if err != nil {
-		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
+		m.err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
 	}
 	defer func(Body io.ReadCloser) {
@@ -225,7 +224,7 @@ func (m Model) updateDumpData(_ tea.Msg) (tea.Model, tea.Cmd) {
 	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
+		m.err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
 	}
 	// write ticket information (csv data) to file.
@@ -234,7 +233,7 @@ func (m Model) updateDumpData(_ tea.Msg) (tea.Model, tea.Cmd) {
 	// create dump file and write data
 	err = os.WriteFile(fileName, body, 0644)
 	if err != nil {
-		err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
+		m.err = errMsg(fmt.Errorf("导出数据失败: %s", err.Error()))
 		return m, tea.Quit
 	}
 	return m, tea.Quit

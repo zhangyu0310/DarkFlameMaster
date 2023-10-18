@@ -9,5 +9,8 @@
   "LogPath": "./run",
   "ProofName": "QQ号",
   "AdditionalName": "支付宝账号",
-  "RootUserName": "root"
+  "RootUserName": "root",
+  "ServicePort": 718,
+  "AdminPort": 1219,
+  "AdminLocalOnly": true
 }

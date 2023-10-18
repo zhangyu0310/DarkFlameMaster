@@ -20,6 +20,7 @@ var (
 )
 
 func RunWebServer() *http.Server {
+	cfg := config.GetGlobalConfig()
 	if GinRunMode != gin.ReleaseMode {
 		GinRunMode = ""
 	}
@@ -34,7 +35,8 @@ func RunWebServer() *http.Server {
 	router.POST("/choose_seat", ChooseResult)
 	router.POST("/check_tickets", CheckTickets)
 
-	srv := &http.Server{Addr: ":718", Handler: router}
+	addr := fmt.Sprintf(":%d", cfg.ServicePort)
+	srv := &http.Server{Addr: addr, Handler: router}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zlog.FatalF("listen: %s\n", err)
@@ -45,6 +47,7 @@ func RunWebServer() *http.Server {
 }
 
 func ShutdownWebServer(srv *http.Server) {
+	// FIXME: how to shutdown server gracefully?
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
