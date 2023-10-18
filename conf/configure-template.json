@@ -8,5 +8,6 @@
   "ChooseSeatStrategy": "NoLimit",
   "LogPath": "./run",
   "ProofName": "QQ号",
-  "AdditionalName": "支付宝账号"
+  "AdditionalName": "支付宝账号",
+  "RootUserName": "root"
 }

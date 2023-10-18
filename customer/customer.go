@@ -49,12 +49,14 @@ func (mgr *Manager) Init() error {
 		return err
 	}
 	mgr.storage = storage
-	_ = mgr.storage.AddCustomer(&Customer{
-		Proof:     "poppin_root",
-		PayTime:   time.Now(),
-		TicketNum: 2333,
-		Tickets:   nil,
-	})
+	if cfg.RootUserName != "" {
+		_ = mgr.storage.AddCustomer(&Customer{
+			Proof:     cfg.RootUserName,
+			PayTime:   time.Now(),
+			TicketNum: 2333,
+			Tickets:   nil,
+		})
+	}
 
 	switch cfg.ChooseSeatStrategy {
 	case config.PayTimeOneByOne:

@@ -25,6 +25,8 @@ type Config struct {
 	// Input label
 	ProofName      string `json:"ProofName"`
 	AdditionalName string `json:"AdditionalName"`
+	// Admin
+	RootUserName string `json:"RootUserName"`
 }
 
 var defaultConfig = Config{

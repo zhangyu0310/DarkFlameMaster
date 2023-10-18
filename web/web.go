@@ -137,23 +137,26 @@ func sendDataToWeb(context *gin.Context, c *customer.Customer, errMsg, additiona
 }
 
 func ChooseSeat(context *gin.Context) {
+	cfg := config.GetGlobalConfig()
 	proof := context.Query("proof")
 	cus, err := customer.GetCustomer(proof)
 	errMsg := ""
 	if err != nil {
 		zlog.DebugF("GetCustomer failed. Proof [%s] err: %s", proof, err)
-		errMsg = "交易单号不存在！请检查后重新选座。"
+		errMsg = "凭证号码不存在！请检查后重新选座。"
 	} else {
 		if !customer.CanChooseSeat(cus) {
-			errMsg = "当前订单暂时还无法进行选座！"
+			errMsg = "当前凭证号码暂时还无法进行选座！"
 		}
 	}
 	additional := context.Query("additional")
 	if errMsg != "" {
 		context.HTML(http.StatusOK, "proof.html",
 			gin.H{
-				"title": "Dark Flame Master - Choose Seat",
-				"error": errMsg,
+				"title":          "Dark Flame Master - Choose Seat",
+				"proofName":      cfg.ProofName,
+				"additionalName": cfg.AdditionalName,
+				"error":          errMsg,
 			})
 	} else {
 		sendDataToWeb(context, cus, errMsg, additional)
@@ -161,6 +164,7 @@ func ChooseSeat(context *gin.Context) {
 }
 
 func ChooseResult(context *gin.Context) {
+	cfg := config.GetGlobalConfig()
 	data := context.PostForm("chooseData")
 	errMsg := "选座成功！"
 	var cus *customer.Customer
@@ -171,8 +175,10 @@ func ChooseResult(context *gin.Context) {
 		errMsg = "选座数据解析失败！需要重新登入。"
 		context.HTML(http.StatusOK, "proof.html",
 			gin.H{
-				"title": "Dark Flame Master - Choose Seat",
-				"error": errMsg,
+				"title":          "Dark Flame Master - Choose Seat",
+				"proofName":      cfg.ProofName,
+				"additionalName": cfg.AdditionalName,
+				"error":          errMsg,
 			})
 	} else {
 		cus, err = customer.GetCustomer(reMsg.Proof)
