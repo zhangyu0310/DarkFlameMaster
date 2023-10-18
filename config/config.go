@@ -107,6 +107,9 @@ func ReadConfig(path string, cfg *Config) {
 	cfg.SeatFileType = SeatFileType(strings.ToLower(string(cfg.SeatFileType)))
 	cfg.CustomerType = CustomerType(strings.ToLower(string(cfg.CustomerType)))
 	cfg.ChooseSeatStrategy = ChooseSeatStrategy(strings.ToLower(string(cfg.ChooseSeatStrategy)))
+	if cfg.ProofName == "" {
+		zlog.Fatal("ProofName is empty")
+	}
 	if cfg.ServicePort == 0 {
 		cfg.ServicePort = 718
 	}

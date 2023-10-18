@@ -74,21 +74,21 @@
     </style>
 </head>
 
-<body><div style="text-align: center;">
+<body onload="loadLabel()"><div style="text-align: center;">
 
     <script src="script/proof.js"></script>
 
     <br><br><br>
 
     <form action="choose_seat" method="get" id="proofForm">
-        <h1>
-            {{ .proofName }}
-        </h1>
-        <input type="text" name="proof" id="proof" size="40"/>
-        <h1>
-            {{ .additionalName }}
-        </h1>
-        <input type="text" name="additional" id="additional" size="40"/><br><br>
+        <p id="proofPart" style="font-size: xx-large; cursor: default; font-family: Georgia, serif; color: black;">
+            <input id="proofInput" type="hidden" value="{{ .proofName }}">
+            <input type="text" name="proof" id="proof" size="40"/>
+        </p>
+        <p id="additionalPart" style="font-size: xx-large; cursor: default; font-family: Georgia, serif; color: black;">
+            <input id="additionalInput" type="hidden" value="{{ .additionalName }}">
+            <input type="text" name="additional" id="additional" size="40"/><br><br>
+        </p>
     </form>
     <form action="check_tickets" method="post" id="checkForm">
         <input type="hidden" name="check" id="check"/>
