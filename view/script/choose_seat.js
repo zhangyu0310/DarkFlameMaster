@@ -51,6 +51,13 @@ function setSeatMsg() {
         seatMsg.removeChild(seatMsg.firstChild)
     }
     var msg = makeSeatMsg()
+    var remaining = canChooseNum - chooseSeat.size
+    if (remaining > 1500) {
+        seatMsg.appendChild(document.createTextNode("剩余可选座位数量：无上限"))
+    } else {
+        seatMsg.appendChild(document.createTextNode("剩余可选座位数量：" + remaining.toString()))
+    }
+    seatMsg.appendChild(document.createElement("br"))
     for (let i = 0; i < msg.length; i++) {
         seatMsg.appendChild(document.createTextNode(msg[i]))
         seatMsg.appendChild(document.createElement("br"))

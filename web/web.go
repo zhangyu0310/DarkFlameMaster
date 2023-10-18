@@ -185,13 +185,18 @@ func ChooseResult(context *gin.Context) {
 		if err != nil {
 			zlog.Fatal("GetCustomer failed when choose result, err:", err)
 		}
-		seats := cinema.AssociateSeats(reMsg.SeatInfo)
-		tk, err := tkmgr.MakeTickets(cus, seats, reMsg.Additional)
-		if err != nil {
-			zlog.Error("Make tickets failed, err:", err)
-			errMsg = "选座失败！"
+		if cus.TicketNum-uint(len(cus.Tickets)) < uint(len(reMsg.SeatInfo)) {
+			zlog.Error("reMsg set info invalid.")
+			errMsg = "选座失败！当前凭证剩余票数不足！"
+		} else {
+			seats := cinema.AssociateSeats(reMsg.SeatInfo)
+			tk, err := tkmgr.MakeTickets(cus, seats, reMsg.Additional)
+			if err != nil {
+				zlog.Error("Make tickets failed, err:", err)
+				errMsg = "选座失败！"
+			}
+			zlog.DebugF("Tickets: %v", tk)
 		}
-		zlog.DebugF("Tickets: %v", tk)
 		sendDataToWeb(context, cus, errMsg, reMsg.Additional)
 	}
 }
