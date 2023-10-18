@@ -47,15 +47,10 @@ func RunWebServer() *http.Server {
 }
 
 func ShutdownWebServer(srv *http.Server) {
-	// FIXME: how to shutdown server gracefully?
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		zlog.Fatal("Server Shutdown:", err)
-	}
-	select {
-	case <-ctx.Done():
-		zlog.Warn("timeout of 5 seconds.")
 	}
 	zlog.Info("Server exiting")
 }
