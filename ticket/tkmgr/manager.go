@@ -113,6 +113,9 @@ func (m *TicketManager) makeTickets(customer *customer.Customer,
 
 func (m *TicketManager) CheckTickets(proof string) []*ticket.Ticket {
 	cus, _ := customer.GetCustomer(proof)
+	if cus == nil {
+		return nil
+	}
 	return cus.Tickets
 }
 

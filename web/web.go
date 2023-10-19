@@ -213,7 +213,7 @@ func CheckTickets(context *gin.Context) {
 	proof := context.PostForm("check")
 	t := tkmgr.CheckTickets(proof)
 	msg := ""
-	if len(t) == 0 {
+	if t == nil || len(t) == 0 {
 		msg = "当前用户没有选座记录！"
 	} else {
 		for _, v := range t {
