@@ -324,6 +324,8 @@ function readData() {
         }
     }
 
+    // 为了让座位图居中，需要设置左边距
+    map.scrollLeft = (map.scrollWidth - map.clientWidth) / 2
     // 生成选座信息
     setSeatMsg()
 }

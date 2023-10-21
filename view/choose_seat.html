@@ -73,13 +73,12 @@
             width: 100%;
             height: 100%;
             white-space: nowrap;
-            overflow: hidden;
-            overflow-x: auto;
+            overflow: scroll;
         }
     </style>
 </head>
 
-<body onload="readData()"><center>
+<body onload="readData()"><div style="text-align: center;">
     <script src="script/choose_seat.js"></script>
     <h1>在线选座</h1>
 
@@ -89,10 +88,8 @@
         -------------------- 屏幕方向 --------------------
     </p>
     <br>
-    <div class="slide">
-        <p id="seatMap">
-            <input type="hidden" id="sd" value="{{ .seatData }}">
-        </p>
+    <input type="hidden" id="sd" value="{{ .seatData }}">
+    <div class="slide" id="seatMap">
     </div>
 
     <p style="font-size: medium; cursor: default;font-family: Georgia,serif;">
@@ -111,5 +108,5 @@
         <button class="button" onclick="doSubmit()" style="vertical-align:middle"><span>提交</span></button>
     </form>
 
-</center></body>
+</div></body>
 </html>
